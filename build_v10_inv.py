@@ -13,7 +13,7 @@ V10.0 库存数据构建器（路径 A：重新内嵌）
   - 演示机按 wh/name 含「演示机/样机/体验机/哑机/陈列」识别（用友无 demo 字段、库存类型也无演示机值）
   - 门店名与 17 店白名单保持一致（已实测逐字一致）
 """
-import re, json, csv, sys, os
+import re, json, csv, sys, os, datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, "index.html")
@@ -190,6 +190,21 @@ def main():
     new_html, cnt = pat.subn(lambda mm: mm.group(1) + new_arr_text + mm.group(3), html, count=1)
     if cnt != 1:
         raise RuntimeError(f"替换失败，匹配数={cnt}")
+
+    # ===== 新鲜度修复：每次刷新重写右上角时间与发布快照时间 =====
+    # 之前只换 inventoryData 不换时间，导致用户无法判断是否最新版。
+    # updateTime(页面右上角) 与 dataSnapshot(发布信息) 统一改为本次刷新时刻。
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    new_html, c1 = re.subn(
+        r'(<b id="updateTime">)[^<]*(</b>)',
+        lambda m: m.group(1) + now + m.group(2),
+        new_html, count=1)
+    new_html, c2 = re.subn(
+        r"dataSnapshot:'[^']*'",
+        f"dataSnapshot:'{now}'",
+        new_html, count=1)
+    print(f"[stamp] 更新时间 -> {now}  (updateTime替换={c1}, dataSnapshot替换={c2})")
+
     with open(INDEX, "w", encoding="utf-8") as f:
         f.write(new_html)
     print(f"[done] index.html 已重建，新静态底表 {len(out)} 条")
