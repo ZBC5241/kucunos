@@ -107,6 +107,26 @@ def to_int(v):
     except Exception:
         return 0
 
+def data_changed(old_arr, new_arr):
+    """判断现存量是否真的变化（决定时间戳是否前进 / 是否推送）。
+
+    比较维度：条数、键集合(code,wh)、每条的 q/a/demo。
+    任一不同即视为“有更新”。
+    """
+    if len(old_arr) != len(new_arr):
+        return True
+    old_by_k = {(x.get("code"), x.get("wh")): x for x in old_arr}
+    new_by_k = {(x.get("code"), x.get("wh")): x for x in new_arr}
+    if set(old_by_k) != set(new_by_k):
+        return True
+    for k, o in old_by_k.items():
+        n = new_by_k.get(k)
+        if n is None:
+            return True
+        if o.get("q") != n.get("q") or o.get("a") != n.get("a") or bool(o.get("demo")) != bool(n.get("demo")):
+            return True
+    return False
+
 def main():
     html = open(INDEX, encoding="utf-8").read()
     old_arr, meta = load_product_meta(html)
@@ -178,7 +198,17 @@ def main():
     if overlap:
         print(f"[recon] (code,wh)重叠={overlap}  元数据不一致记录={mismatch}  一致率={100*(overlap-mismatch)/overlap:.2f}%")
 
-    # 写 JSON 产物（便于核对，不进 git 也可）
+    # ===== 新鲜度闸门（晨哥 2026-08-31 铁律）=====
+    # 时间戳只代表“数据最后一次真正变化的时刻”。
+    # 若本次拉取的现存量与线上当前完全一致，视为“无新数据”，
+    # 绝不前进时间戳、绝不写文件、绝不推送，避免误导用户以为已更新。
+    FORCE = "--force" in sys.argv
+    if not FORCE and not data_changed(old_arr, out):
+        print("[unchanged] 本次现存量与线上当前完全一致（用友自上次更新后无出入库）。")
+        print("[unchanged] 不刷新时间戳、不写文件、不推送。如需强制刷新加 --force。")
+        return
+
+    # 写 JSON 产物（便于核对）
     with open(os.path.join(HERE, "inventory.gen.json"), "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False)
 
@@ -191,9 +221,7 @@ def main():
     if cnt != 1:
         raise RuntimeError(f"替换失败，匹配数={cnt}")
 
-    # ===== 新鲜度修复：每次刷新重写右上角时间与发布快照时间 =====
-    # 之前只换 inventoryData 不换时间，导致用户无法判断是否最新版。
-    # updateTime(页面右上角) 与 dataSnapshot(发布信息) 统一改为本次刷新时刻。
+    # 仅数据确有变化时才刷新时间戳（= 数据最后一次变化时刻）
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     new_html, c1 = re.subn(
         r'(<b id="updateTime">)[^<]*(</b>)',
