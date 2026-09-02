@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- V11.3 登录保护测试版：基于 V11.2 正式上线前端基线，仅升级内部测试登录模块，业务搜索/库存/补货/调拨逻辑保持不变 -->
-<title>李家村库存工作台 V11.3 登录保护测试版</title>
-  <meta name="description" content="李家村库存工作台 V11.3 登录保护测试版：保留全品类库存查询、本店库存、补货、调拨能力，增加内部测试登录保护与7天登录状态。">
+  <!-- V11.4 登录保护测试版：基于 V11.2 正式上线前端基线，仅升级内部测试登录模块，业务搜索/库存/补货/调拨逻辑保持不变 -->
+<title>李家村库存工作台 V11.4 登录保护测试版</title>
+  <meta name="description" content="李家村库存工作台 V11.4 登录保护测试版：保留全品类库存查询、本店库存、补货、调拨能力，增加内部测试登录保护与7天登录状态。">
   <!-- V11.0 production | 默认页: 查库存 | 主题: 雾紫专业 | 响应式: 手机/平板/桌面
   后台对接字段契约: code=SKU主键; name=完整SKU全称; wh=门店/仓库; cat=分类; q=账面库存; a=可售库存;
   series/model/mem/color=搜索辅助; demo=演示机标记; hw=辅助字段。
@@ -1026,7 +1026,7 @@ html:not(.ljc-authenticated) .v111-login{display:flex}
 html:not(.ljc-authenticated) .v111-logout{display:none}
 @media(max-width:480px){.v111-login-card{padding:26px 20px 22px;border-radius:23px}.v111-logout{top:8px;right:8px;padding:6px 9px;font-size:10px}}
 </style>
-<script>try{const a=JSON.parse(localStorage.getItem('ljc-auth-v113')||'null');if(a&&a.user==='ljc'&&a.version==='11.3'&&Number(a.expiresAt)>Date.now())document.documentElement.classList.add('ljc-authenticated');else if(a)localStorage.removeItem('ljc-auth-v113')}catch(e){try{localStorage.removeItem('ljc-auth-v113')}catch(_){}}</script>
+<script>try{const a=JSON.parse(localStorage.getItem('ljc-auth-v114')||'null');if(a&&a.user==='ljc'&&a.version==='11.4'&&Number(a.expiresAt)>Date.now())document.documentElement.classList.add('ljc-authenticated');else if(a)localStorage.removeItem('ljc-auth-v114')}catch(e){try{localStorage.removeItem('ljc-auth-v114')}catch(_){}}</script>
 </head>
 <body>
 <section class="v111-login" id="v111Login" aria-label="登录">
@@ -1038,7 +1038,7 @@ html:not(.ljc-authenticated) .v111-logout{display:none}
     <label class="v111-field"><span>密码</span><input id="v111Pass" name="password" type="password" autocomplete="current-password" required></label>
     <button class="v111-submit" type="submit">登录工作台</button>
     <div class="v111-login-error" id="v111LoginError" role="alert"></div>
-    <div class="v111-login-note">V11.3 内部登录保护测试版 · 登录状态有效 7 天</div>
+    <div class="v111-login-note">V11.4 内部登录保护测试版 · 登录状态有效 7 天</div>
     <div class="v113-auth-caption">内部测试保护层 · 正式后台上线后应切换为服务端认证</div>
   </form>
 </section>
@@ -1076,7 +1076,7 @@ html:not(.ljc-authenticated) .v111-logout{display:none}
 
 <script>
 // ===== V11.0 BACKEND INTEGRATION CONTRACT =====
-window.LJC_RELEASE_INFO=Object.freeze({version:'11.3',channel:'internal-auth-test',defaultPage:'query',homeStore:'华为李家村万达授权体验店',dataSnapshot:'2026-09-02 15:03'});
+window.LJC_RELEASE_INFO=Object.freeze({version:'11.4',channel:'internal-auth-test',defaultPage:'query',homeStore:'华为李家村万达授权体验店',dataSnapshot:'2026-09-02 15:03'});
 window.LJC_INVENTORY_SCHEMA=Object.freeze({required:['code','name','wh','cat','q','a','series','model','mem','color','demo','hw'],primaryKey:'code',saleableQuantity:'a',note:'name必须使用完整SKU全称；可售库存严格使用a，不能用q补a=0；搜索采用全品类基础版优先；基础版不存在且当前条件只对应唯一特殊版本时可安全反推，多个特殊版本则要求补充版本；后台原始字段会先规范化再参与搜索与统计。'});
 window.LJC_BACKEND_HANDOFF=Object.freeze({loadOrder:['获取真实库存','字段规范化','建立查询索引','建立SKU健康模型','恢复本地任务状态','开放页面交互'],rule:'异步 API 接入时，不要在旧索引建立后只替换 inventoryData；必须在真实数据到达后重新执行搜索索引与业务模型初始化。'});
 // DATA SOURCE START：后台接入时替换下方 inventoryData，保持字段语义不变。
@@ -1921,15 +1921,15 @@ function switchTab(t){
 }
 document.querySelectorAll('#v54Nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.v55));
 window.__v55={SKU,switchTab,openSku,renderStore,renderRestock,cart,taskState,resolveStoreSearch,buildStoreFilteredView,updateStoreSearchView,resolveRestockSearch,updateRestockSearchView};
-window.LJC_RUNTIME_INFO={version:'11.3',get skuCount(){return SKU.length},get coreSkuCount(){return SKU.filter(x=>CORE.has(x.cat)).length},get stores(){return [...STORES]},get home(){return HOME}};
+window.LJC_RUNTIME_INFO={version:'11.4',get skuCount(){return SKU.length},get coreSkuCount(){return SKU.filter(x=>CORE.has(x.cat)).length},get stores(){return [...STORES]},get home(){return HOME}};
 updateBadges();switchTab('query');
 })();
 </script>
 
 <script id="v111-auth-script">
 (()=>{
-const AUTH_KEY='ljc-auth-v113';
-const AUTH_VERSION='11.3';
+const AUTH_KEY='ljc-auth-v114';
+const AUTH_VERSION='11.4';
 const USER='ljc';
 const PASS_SHA256='6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b';
 const SESSION_MS=7*24*60*60*1000;
