@@ -1,6 +1,7 @@
 #!/bin/bash
-# 李家村库存工作台 V11.4 一键更新脚本
-# 链路：纯HTTP拿数(经理账号) -> xlsx转csv -> 注入V11.4底表(含新鲜度闸门) -> 校验 -> 推送
+# 李家村库存工作台 V11.4 一键更新脚本（接口升级版）
+# 链路：确保 9223 经理会话 → 直连接口拉现存量(pull_live 优先，失败 fallback xlsx 老路)
+#       → 注入 V11.4 底表(含新鲜度闸门) → 校验 → 推送
 # 用法：
 #   bash update_workbench.sh            # 仅本地更新 index.html（不推送）
 #   PUSH=1 bash update_workbench.sh     # 本地更新 + git commit + SSH推送 + 线上SHA校验
@@ -9,20 +10,60 @@ set -u
 KUCUNOS=/Users/mac/WorkBuddy/2026-08-31-14-14-00/kucunos
 CLAW=/Users/mac/WorkBuddy/Claw
 PY=/Users/mac/.workbuddy/binaries/python/envs/default/bin/python3
+DL=~/Downloads
+TODAY=$(date +%Y%m%d)
 
 cd "$KUCUNOS" || exit 1
 
-echo "=== [1/4] 拉取最新现存量（纯HTTP, 经理账号 18591910491 + Chrome 9223）==="
-"$PY" "$CLAW/update_kucun.py" || {
-  echo "!! 拿数失败，尝试 recover_login 重登经理账号"
-  "$PY" "$CLAW/recover_login.py" || { echo "!! 重登失败，本次更新中止"; exit 1; }
-  "$PY" "$CLAW/update_kucun.py" || { echo "!! 重登后仍失败，中止"; exit 1; }
+# ---------- 确保 9223 经理 Chrome 会话（带经理登录态 + 存量查询已开）----------
+ensure_9223() {
+  if curl -s --max-time 2 http://127.0.0.1:9223/json/version >/dev/null 2>&1; then
+    echo "[9223] 已运行，复用现有会话"
+    return 0
+  fi
+  echo "[9223] 未运行，拉起经理 Chrome 会话（/tmp/mgr-chrome，钥匙串自动 CAS 登录）…"
+  "$PY" - <<'PY' || return 1
+import sys, time
+sys.path.insert(0, "/Users/mac/WorkBuddy/Claw")
+import stock_pull as sp
+if not sp.ensure_chrome():
+    sys.exit(1)
+bws = sp.get_bws(); time.sleep(1)
+t, sid = sp.find_page(bws); bws.cmd("Page.enable", {}, sid)
+if not sp.login(bws, sid):
+    sys.exit(1)
+app = sp.open_stock(bws, sid)
+sys.exit(0 if app else 1)
+PY
 }
 
-echo "=== [2/4] xlsx -> csv ==="
-CSV=$("$PY" "$KUCUNOS/conv_xlsx.py") || { echo "!! 转换失败"; exit 1; }
+# ---------- 拉数：直连接口优先，xlsx 老路兜底 ----------
+ensure_9223 || { echo "!! 9223 会话拉起失败，中止"; exit 1; }
 
-echo "=== [3/4] 注入 V11.4 底表（含新鲜度闸门）==="
+CSV=""
+# pull_live.py 仅在成功时向 stdout 输出 csv 路径，其余诊断走 stderr
+if CSV=$("$PY" "$KUCUNOS/pull_live.py"); then
+  if [ -n "$CSV" ]; then
+    echo "=== [1/4] 直连接口拉数成功 -> $CSV ==="
+  fi
+fi
+
+if [ -z "$CSV" ]; then
+  echo "!! 直连接口失败，回退 xlsx 老路（update_kucun → stock_pull）"
+  if "$PY" "$CLAW/update_kucun.py"; then
+    CSV=$("$PY" "$KUCUNOS/conv_xlsx.py") || { echo "!! 转换失败"; exit 1; }
+  else
+    "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" || { echo "!! 拉数彻底失败，本次更新中止"; exit 1; }
+    LATEST=$(ls -t "$DL"/*.xlsx 2>/dev/null | grep -v "现存量_${TODAY}_默认方案.xlsx" | head -1)
+    if [ -z "$LATEST" ]; then
+      echo "!! fallback 未找到刚下载的 xlsx"; exit 1
+    fi
+    cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
+    CSV=$("$PY" "$KUCUNOS/conv_xlsx.py") || { echo "!! 转换失败"; exit 1; }
+  fi
+fi
+
+echo "=== [2/4] 注入 V11.4 底表（含新鲜度闸门）==="
 "$PY" "$KUCUNOS/build_v11_inv.py" "$CSV"
 # build_v11_inv.py 内部：数据无变化 -> 不写 index.html（git diff 为空 -> 跳过）
 #                    数据有变化 -> 写 index.html（git diff 非空 -> 提交）
@@ -32,7 +73,7 @@ if git diff --quiet index.html; then
   exit 0
 fi
 
-echo "=== [4/4] 提交 + 推送（仅 PUSH=1 时）==="
+echo "=== [3/4] 提交 + 推送（仅 PUSH=1 时）==="
 if [ "${PUSH:-}" != "1" ]; then
   echo "[dry] PUSH 未设，跳过 git 提交/推送（仅本地已更新 index.html）"
   exit 0

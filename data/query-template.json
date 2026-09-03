@@ -1,0 +1,32 @@
+{
+  "url": "https://c3.yonyoucloud.com/yonbip-scm-stock/report/list?locale=zh_CN&serviceCode=stock_stockanalysislist&terminalType=1",
+  "body": {
+    "page": {
+      "pageSize": 5000,
+      "pageIndex": 1
+    },
+    "billnum": "stock_stockanalysis",
+    "condition": {
+      "commonVOs": [
+        {
+          "itemName": "schemeName",
+          "value1": "默认方案"
+        },
+        {
+          "itemName": "isDefault",
+          "value1": true
+        }
+      ],
+      "filtersId": "2798265",
+      "solutionId": "2402143006059659278"
+    },
+    "bClick": true,
+    "bEmptyWithoutFilterTree": true,
+    "locale": "zh_CN",
+    "serviceCode": "stock_stockanalysislist",
+    "groupSchemaId": "2423863884037226497",
+    "isIncludeMeta": true,
+    "ownDomain": "ustock",
+    "tplid": "2381986166177529862"
+  }
+}
