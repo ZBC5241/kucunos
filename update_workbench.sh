@@ -40,26 +40,34 @@ PY
 # ---------- 拉数：直连接口优先，xlsx 老路兜底 ----------
 ensure_9223 || { echo "!! 9223 会话拉起失败，中止"; exit 1; }
 
-CSV=""
-# pull_live.py 仅在成功时向 stdout 输出 csv 路径，其余诊断走 stderr
-if CSV=$("$PY" "$KUCUNOS/pull_live.py"); then
-  if [ -n "$CSV" ]; then
-    echo "=== [1/4] 直连接口拉数成功 -> $CSV ==="
+# 拉数逻辑（直连接口优先，xlsx 老路兜底）
+# 成功向 stdout 输出 csv 路径；失败向 stdout 输出空，由外层判断是否走重登恢复
+pull_csv() {
+  local csv=""
+  if csv=$("$PY" "$KUCUNOS/pull_live.py") && [ -n "$csv" ]; then
+    echo "=== [1/4] 直连接口拉数成功 -> $csv ===" >&2
+    printf '%s' "$csv"; return 0
   fi
-fi
-
-if [ -z "$CSV" ]; then
-  echo "!! 直连接口失败，回退 xlsx 老路（update_kucun → stock_pull）"
+  echo "!! 直连接口失败，回退 xlsx 老路（update_kucun → stock_pull）" >&2
   if "$PY" "$CLAW/update_kucun.py"; then
-    CSV=$("$PY" "$KUCUNOS/conv_xlsx.py") || { echo "!! 转换失败"; exit 1; }
+    csv=$("$PY" "$KUCUNOS/conv_xlsx.py") || return 1
+    printf '%s' "$csv"; return 0
+  fi
+  "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" || return 1
+  local LATEST=$(ls -t "$DL"/*.xlsx 2>/dev/null | grep -v "现存量_${TODAY}_默认方案.xlsx" | head -1)
+  [ -z "$LATEST" ] && return 1
+  cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
+  csv=$("$PY" "$KUCUNOS/conv_xlsx.py") || return 1
+  printf '%s' "$csv"; return 0
+}
+
+CSV=$(pull_csv)
+if [ -z "$CSV" ]; then
+  echo "!! 首次拉数失败，疑似经理 cookie 过期 → 走 recover_login 用钥匙串重登后重试"
+  if "$PY" "$CLAW/recover_login.py"; then
+    CSV=$(pull_csv) || { echo "!! 重登后仍拉数失败，本次更新中止"; exit 1; }
   else
-    "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" || { echo "!! 拉数彻底失败，本次更新中止"; exit 1; }
-    LATEST=$(ls -t "$DL"/*.xlsx 2>/dev/null | grep -v "现存量_${TODAY}_默认方案.xlsx" | head -1)
-    if [ -z "$LATEST" ]; then
-      echo "!! fallback 未找到刚下载的 xlsx"; exit 1
-    fi
-    cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
-    CSV=$("$PY" "$KUCUNOS/conv_xlsx.py") || { echo "!! 转换失败"; exit 1; }
+    echo "!! recover_login 重登失败（钥匙串 yonyou-mgr 可能失效），本次更新中止"; exit 1
   fi
 fi
 
