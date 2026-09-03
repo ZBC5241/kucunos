@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- V11.4 登录保护测试版：基于 V11.2 正式上线前端基线，仅升级内部测试登录模块，业务搜索/库存/补货/调拨逻辑保持不变 -->
-<title>李家村库存工作台 V11.4 登录保护测试版</title>
-  <meta name="description" content="李家村库存工作台 V11.4 登录保护测试版：保留全品类库存查询、本店库存、补货、调拨能力，增加内部测试登录保护与7天登录状态。">
+  <!-- V11.4 正式版：基于 V11.2 正式上线前端基线，仅升级登录模块，业务搜索/库存/补货/调拨逻辑保持不变 -->
+<title>李家村库存工作台 V11.4 正式版</title>
+  <meta name="description" content="李家村库存工作台 V11.4 正式版：保留全品类库存查询、本店库存、补货、调拨能力，增加登录保护与可配置登录状态。">
   <!-- V11.0 production | 默认页: 查库存 | 主题: 雾紫专业 | 响应式: 手机/平板/桌面
   后台对接字段契约: code=SKU主键; name=完整SKU全称; wh=门店/仓库; cat=分类; q=账面库存; a=可售库存;
   series/model/mem/color=搜索辅助; demo=演示机标记; hw=辅助字段。
@@ -1038,7 +1038,7 @@ html:not(.ljc-authenticated) .v111-logout{display:none}
     <label class="v111-field"><span>密码</span><input id="v111Pass" name="password" type="password" autocomplete="current-password" required></label>
     <button class="v111-submit" type="submit">登录工作台</button>
     <div class="v111-login-error" id="v111LoginError" role="alert"></div>
-    <div class="v111-login-note">V11.4 内部登录保护测试版 · 登录状态有效 7 天</div>
+    <div class="v111-login-note">V11.4 正式版 · 登录状态有效 7 天</div>
     <div class="v113-auth-caption">内部测试保护层 · 正式后台上线后应切换为服务端认证</div>
   </form>
 </section>
