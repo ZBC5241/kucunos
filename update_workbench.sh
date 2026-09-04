@@ -49,11 +49,14 @@ pull_csv() {
     printf '%s' "$csv"; return 0
   fi
   echo "!! 直连接口失败，回退 xlsx 老路（update_kucun → stock_pull）" >&2
-  if "$PY" "$CLAW/update_kucun.py"; then
+  if "$PY" "$CLAW/update_kucun.py" >&2; then
     csv=$("$PY" "$KUCUNOS/conv_xlsx.py") || return 1
     printf '%s' "$csv"; return 0
   fi
-  "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" || return 1
+  # 关键修复：stock_pull 的详细日志必须走 stderr，否则会漏进 CSV 变量
+  # 导致 build_v11_inv.py 把日志文本当路径 → FileNotFoundError。
+  # 真正的 csv 路径由下方 conv_xlsx.py 兜底输出（仅单行路径走 stdout）。
+  "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" >&2 || return 1
   local LATEST=$(ls -t "$DL"/*.xlsx 2>/dev/null | grep -v "现存量_${TODAY}_默认方案.xlsx" | head -1)
   [ -z "$LATEST" ] && return 1
   cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
