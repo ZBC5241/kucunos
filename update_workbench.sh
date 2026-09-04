@@ -98,13 +98,47 @@ git push origin main 2>&1 | tail -5
 echo "=== 线上 SHA 校验（GitHub Pages 有缓存，轮询等待）==="
 LOCAL=$(shasum -a 256 index.html | cut -d' ' -f1)
 echo "本地 SHA256: $LOCAL"
+MATCHED=0
 for i in $(seq 1 6); do
   sleep 15
   ONLINE=$(curl -s --compressed https://zbc5241.github.io/kucunos/ | shasum -a 256 | cut -d' ' -f1)
   if [ "$LOCAL" = "$ONLINE" ]; then
     echo "✅ 第${i}次匹配，逐字节一致，上线成功"
+    MATCHED=1
     break
   else
     echo "  第${i}次仍不一致 (online=$ONLINE)"
   fi
 done
+
+# ---------- 自愈：SHA 未匹配时检测 Pages 是否卡死，是则推空提交重触发 ----------
+if [ "$MATCHED" != "1" ]; then
+  echo "⚠️ SHA 未匹配，检测 GitHub Pages 构建是否卡死…"
+  ST=$(gh api repos/ZBC5241/kucunos/pages --jq .status 2>/dev/null)
+  HEAD_SHA=$(git rev-parse HEAD)
+  DEP_N=$(gh api repos/ZBC5241/kucunos/deployments --jq "[.[] | select(.sha==\"$HEAD_SHA\")] | length" 2>/dev/null)
+  echo "  Pages状态=$ST  HEAD=$HEAD_SHA  该commit已部署数=${DEP_N:-0}"
+  if [ "$ST" != "built" ] || [ "${DEP_N:-0}" = "0" ]; then
+    echo "  判定构建卡死（无 deployment 或 status≠built），推送空提交重新触发…"
+    if git commit --allow-empty -m "chore(kucunos): re-trigger GitHub Pages build (SHA 校验自愈 $(date '+%H:%M'))" && \
+       git push origin main 2>&1 | tail -3; then
+      echo "  已重新触发，二次轮询（最多 6 次 / 90s）…"
+      for i in $(seq 1 6); do
+        sleep 15
+        ONLINE=$(curl -s --compressed https://zbc5241.github.io/kucunos/ | shasum -a 256 | cut -d' ' -f1)
+        if [ "$LOCAL" = "$ONLINE" ]; then
+          echo "✅ 自愈后第${i}次匹配，逐字节一致，上线成功"
+          MATCHED=1
+          break
+        else
+          echo "  自愈后第${i}次仍不一致 (online=$ONLINE)"
+        fi
+      done
+    else
+      echo "  !! 空提交推送失败，跳过自愈（数据已入库，仅 Pages 未刷新，下次运行将重试）"
+    fi
+  else
+    echo "  构建状态正常(built)但仍不一致，疑似 CDN 边缘缓存，可稍后强刷"
+  fi
+  [ "$MATCHED" != "1" ] && echo "⚠️ 最终 SHA 仍未匹配：线上可能滞后，请关注" || true
+fi
