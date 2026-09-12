@@ -1165,6 +1165,89 @@ body.lg-dock-receded #v54Nav{transform:translateY(8px) scale(.985)!important;opa
 @media(pointer:coarse){.lg-interactive:hover{filter:none}.v55-priority:hover,.v56-home-rank:hover,.v56-stock-row:hover,.v55-store:hover{background:transparent}}
 body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::before{opacity:calc(.36 + var(--lg-energy)*.22)}
 </style>
+<style id="query-skin-kucun">
+/* ==========================================================================
+   「查库存」板块换壳 —— 对齐老 kucun（zzz iOS26 Liquid Glass 壳）
+   作用域：仅 #queryPage（查库存 tab）。其他 tab 与底部 Dock(#v54Nav) 不受影响。
+   来源：老 kucun 线上实测计算样式（2026-09-13）
+   ========================================================================== */
+#queryPage{
+  --qk-ink:#1d1d1f;
+  --qk-sub:#686874;
+  --qk-edge:rgba(255,255,255,.9);
+  --qk-glass:linear-gradient(145deg,rgba(255,255,255,.72),rgba(255,255,255,.28));
+  --qk-shadow:0 12px 36px rgba(35,39,66,.1),0 2px 5px rgba(35,39,66,.04),inset 0 1px 0 rgba(255,255,255,.95);
+  --qk-safe:env(safe-area-inset-bottom,0px);
+  color:var(--qk-ink);
+}
+#queryPage > header.qv7c-header{position:static!important;z-index:auto!important;padding-bottom:0!important}
+#queryPage .qv7c-panel{
+  padding:18px 22px!important;
+  border-radius:30px!important;
+  background-color:transparent!important;
+  background-image:var(--qk-glass)!important;
+  box-shadow:var(--qk-shadow)!important;
+  backdrop-filter:blur(28px) saturate(1.6)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(1.6)!important;
+}
+#queryPage .qv64-empty-start{
+  display:block!important;
+  width:100%!important;max-width:560px!important;
+  margin:30px auto 0!important;
+  padding:30px 24px!important;
+  text-align:center!important;
+  background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+#queryPage .qv64-empty-start::before{
+  content:''!important;display:block!important;
+  width:74px!important;height:74px!important;
+  margin:0 auto 25px!important;
+  background-color:rgba(255,255,255,.6);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='74' height='74' viewBox='0 0 74 74'%3E%3Cg fill='none' stroke='%236558d9' stroke-width='2.6' stroke-linecap='round'%3E%3Ccircle cx='34' cy='33' r='11'/%3E%3Cpath d='m42 42 10 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+  border:1px solid var(--qk-edge);
+  border-radius:25px!important;
+  box-shadow:var(--qk-shadow);
+}
+#queryPage .qv64-empty-title{font-size:29px!important;letter-spacing:-1px!important;font-weight:650!important;color:var(--qk-ink)!important}
+#queryPage .qv64-empty-sub{font-size:16px!important;line-height:1.9!important;color:var(--qk-sub)!important;max-width:400px!important;margin:13px auto 0!important}
+#queryPage #sbox{
+  min-height:60px!important;
+  padding:8px 10px 8px 19px!important;
+  gap:12px!important;
+  border:1px solid var(--qk-edge)!important;
+  border-radius:32px!important;
+  background-color:transparent!important;
+  background-image:var(--qk-glass)!important;
+  box-shadow:var(--qk-shadow)!important;
+  backdrop-filter:blur(32px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+}
+#queryPage #sbox input{font-size:17px!important;color:var(--qk-ink)!important}
+#queryPage #sbox input::placeholder{color:#7c7c89!important}
+/* 桌面端：容器宽度 / 间距 / 搜索框位置 对齐老 kucun */
+@media(min-width:768px){
+  #queryPage{
+    width:min(100%,1064px)!important;
+    max-width:none!important;
+    margin-inline:auto!important;
+    padding:28px 24px calc(174px + var(--qk-safe))!important;
+    gap:24px!important;
+  }
+  #queryPage #qv63SearchFloat{
+    position:sticky!important;
+    top:16px!important;
+    bottom:auto!important;
+    width:min(100%,760px)!important;
+    max-width:none!important;
+    margin:0 auto!important;
+    height:auto!important;
+    z-index:50!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <section class="v111-login" id="v111Login" aria-label="登录">
