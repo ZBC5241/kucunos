@@ -1264,7 +1264,7 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 
 #queryPage .qv7c-panel{border-radius:30px;background:var(--lg-glass);border:1px solid var(--lg-edge);box-shadow:var(--lg-shadow);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);}
 
-#queryPage .qv7c-chip, #queryPage .v111-login-mark{background:linear-gradient(145deg,#8c80ef,#6253cf);color:white;box-shadow:inset 0 1px 1px #ffffff90,0 6px 16px #6558d922;border:1px solid #ffffff55;border-radius:16px;font-weight:600;}
+#queryPage .qv7c-chip{background:linear-gradient(145deg,#8c80ef,#6253cf);color:white;box-shadow:inset 0 1px 1px #ffffff90,0 6px 16px #6558d922;border:1px solid #ffffff55;border-radius:16px;font-weight:600;}
 
 #queryPage .qv7c-title{font-weight:650;letter-spacing:-.7px;}
 
@@ -1273,8 +1273,6 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 #queryPage .updated{color:var(--lg-sub);}
 
 #queryPage .updated b{font-weight:500;}
-
-#queryPage .v111-logout{border:1px solid #ffffffa0;background:rgba(255,255,255,.58);color:var(--lg-ink);border-radius:24px;box-shadow:inset 0 1px 0 white,0 2px 6px #24284908;}
 
 #queryPage .qv64-empty-start{text-align:center;}
 
@@ -1352,19 +1350,6 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 
 #queryPage .qv58-limit-note{text-align:center;color:var(--lg-sub);}
 
-#queryPage .v111-login-card{background:var(--lg-glass);border:1px solid var(--lg-edge);border-radius:34px;box-shadow:var(--lg-shadow);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);}
-
-#queryPage .v111-login-mark{border-radius:21px;}
-
-#queryPage .v111-login h1{text-align:center;font-weight:650;letter-spacing:-.8px;}
-
-#queryPage .v111-field span{color:var(--lg-sub);}
-
-#queryPage .v111-field input{border:1px solid #88889a22;border-radius:17px;background:var(--lg-solid);color:var(--lg-ink);}
-
-#queryPage .v111-submit{border:1px solid #ffffff55;border-radius:27px;background:linear-gradient(155deg,#8276e6,#6253cf);box-shadow:0 8px 20px #6558d925,inset 0 1px 0 #ffffff60;color:white;font-weight:600;}
-
-#queryPage .v111-login-error{text-align:center;color:#bf3e49;}
 @keyframes appear{
 
 #queryPage from{opacity:0;}
@@ -1438,8 +1423,6 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 
 #queryPage .search-box:focus-within{box-shadow:0 18px 46px rgba(38,42,70,.14),0 0 0 1px rgba(105,88,224,.17),inset 0 1px 0 #fff!important;}
 
-#queryPage body.lg-search-active #v54Nav{filter:saturate(.94);opacity:.92;}
-
 #queryPage .lg-interactive{will-change:transform;transition:transform .5s var(--lg-spring),box-shadow .3s ease,filter .3s ease!important;}
 
 #queryPage .lg-interactive:hover{filter:saturate(1.08) brightness(1.012);}
@@ -1469,7 +1452,7 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 
 #queryPage #v54Nav button span{transition:max-width .52s var(--lg-spring),opacity .26s ease,transform .52s var(--lg-spring);}
 
-#queryPage body.lg-controls-receded #v54Nav button span{opacity:0;}
+body.lg-dock-receded #queryPage #v54Nav button span{opacity:0;}
 
 #queryPage .lg-focus-pulse{animation:lg-focus-pulse .7s var(--lg-spring);}
 @keyframes lg-focus-pulse{
@@ -1496,7 +1479,7 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 
 #queryPage .qv64-empty-start::before{animation:none;}
 
-#queryPage body.lg-controls-receded #v54Nav button span{opacity:1;}
+body.lg-dock-receded #queryPage #v54Nav button span{opacity:1;}
 }
 @media(prefers-reduced-transparency:reduce){
 
@@ -1506,9 +1489,9 @@ body.lg-lite .lg-orb{filter:blur(28px);opacity:.27}body.lg-lite .lg-optical::bef
 #queryPage .lg-interactive:hover{filter:none;}
 }
 
-#queryPage body.lg-lite .lg-orb{filter:blur(28px);opacity:.28;}
+body.lg-lite .lg-orb{filter:blur(28px);opacity:.28;}
 
-#queryPage body.lg-lite .lg-optical::before{opacity:calc(.38 + var(--lg-energy) * .24);}
+body.lg-lite .lg-optical::before{opacity:calc(.38 + var(--lg-energy) * .24);}
 
 /* V3.2 顶部舒适调整 */
 @media(max-width:767px){
