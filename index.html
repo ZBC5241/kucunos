@@ -1746,6 +1746,16 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 .v55-q.source{align-items:center!important;text-align:center!important}
 .v55-q.source b{font-size:14px!important;line-height:1.35!important}
 
+/* 列表条目全部卡片化：每条都是可见的独立卡片（本店排行/库存一览/调拨门店/货源行） */
+.v56-stock-row,.v56-home-rank,.v55-store,.v55-donor{
+  background:var(--lg-card)!important;
+  border:1px solid var(--lg-line)!important;
+  border-radius:16px!important;
+  padding:12px!important;
+  margin-top:8px!important;
+  box-shadow:var(--lg-card-shadow)!important}
+.v56-stock-row:first-child,.v56-home-rank:first-child,.v55-store:first-child,.v55-donor:first-child{margin-top:0!important;padding-top:12px!important}
+
 /* 长列表渲染加速：用 CSS containment 隔离每个卡片的布局/绘制，滚动和交互更跟手 */
 .v55-priority,
 .v55-task,
