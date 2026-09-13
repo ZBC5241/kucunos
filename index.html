@@ -1679,6 +1679,75 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 #queryPage #sbox{background-color:rgba(250,250,251,.94)!important;background-image:linear-gradient(145deg,rgba(255,255,255,.8),rgba(255,255,255,.48) 55%,rgba(242,242,247,.52))!important;border-color:rgba(255,255,255,.92)!important}
 #queryPage #sbox input{font-size:16px!important;color:#1c1c1e!important}
 #queryPage #sbox input::placeholder{color:#8e8e93!important}
+
+/* ===== V3.3 全 tab 卡片字体/对齐/性能优化 ===== */
+/* 统一提升各 tab 卡片内过小标签字号，向查库存 tab 可读性对齐 */
+.v55-kpi span,
+.v55-q span,
+.v55-metric span,
+.v55-transfer-stat span,
+.v55-reco span,
+.v55-state,
+.v56-store-stat span,
+.v56-home-rank .qty span,
+.v56-stock-qty span,
+.v56-stock-meta,
+.v56-mini,
+.v55-progress-ring span,
+.v55-store-score span,
+.v55-store-sub,
+.v55-group-sub,
+.v55-cart-meta,
+.v55-donor-name,
+.v55-donor-qty,
+.v55-sheet-stat span,
+.v56-cat span,
+.v81-rc-badge,
+.v104-store-search-note,
+.v105-restock-result-sub{font-size:11px!important;line-height:1.35!important}
+#v54Nav .v55-count{font-size:10px!important}
+.v56-cat b{font-size:12px!important}
+.v55-code{font-size:10.5px!important}
+.v55-warning{font-size:11px!important}
+
+/* 关键数值卡片强制纵向居中，避免标签偏上/偏下 */
+.v55-kpi,
+.v55-q,
+.v55-metric,
+.v55-transfer-stat > div,
+.v56-store-stat,
+.v56-stock-qty,
+.v55-store-score,
+.v55-sheet-stat,
+.v55-donor-top{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.v55-q.source{align-items:flex-start!important;text-align:left!important}
+.v55-reco{align-items:center!important}
+
+/* 标签/徽章按钮内文字严格垂直居中 */
+.v55-badge,.v55-state{display:inline-flex!important;align-items:center!important;justify-content:center!important;vertical-align:middle!important;min-height:20px!important}
+.v55-actions{align-items:center!important}
+
+/* 长列表渲染加速：用 CSS containment 隔离每个卡片的布局/绘制，滚动和交互更跟手 */
+.v55-priority,
+.v55-task,
+.v56-stock-row,
+.v55-store,
+.v55-group-item,
+.v56-home-rank,
+.v55-donor{contain:layout paint style!important}
+
+/* 保证网格容器不被 containment 截断定位关系 */
+.v91-store-grid,.v91-task-grid{position:relative!important}
+
+/* 按钮最小高度保证触控，与查库存大按钮手感一致 */
+.v55-btn{min-height:40px!important;padding:9px 14px!important;font-size:12px!important}
+.v55-btn:disabled{opacity:.45!important}
+
+/* 小屏密度保护：避免标签换行挤爆 */
+@media(max-width:374px){
+.v56-stock-foot{gap:5px!important;flex-wrap:wrap!important}
+.v55-actions{flex-wrap:wrap!important;gap:7px!important}
+}
 </style>
 </head>
 <body>
