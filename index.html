@@ -1039,9 +1039,9 @@ html.ljc-role-staff #v54Page,html.ljc-role-staff #v54Sheet,html.ljc-role-staff #
   --lg-canvas:#f2f3f8;--lg-solid:rgba(255,255,255,.86);--lg-soft:rgba(255,255,255,.68);
   --lg-edge:rgba(255,255,255,.88);--lg-line:rgba(98,98,118,.13);
   --lg-glass:linear-gradient(145deg,rgba(255,255,255,.74),rgba(255,255,255,.30));
-  --lg-card:linear-gradient(145deg,rgba(255,255,255,.92),rgba(251,251,254,.78));
+  --lg-card:linear-gradient(145deg,rgba(255,255,255,.90),rgba(249,250,253,.68));
   --lg-shadow:0 18px 48px rgba(35,39,66,.10),0 3px 9px rgba(35,39,66,.035),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.36);
-  --lg-card-shadow:0 10px 30px rgba(35,39,66,.065),inset 0 1px 0 rgba(255,255,255,.92);
+  --lg-card-shadow:0 14px 34px rgba(35,39,66,.11),0 3px 8px rgba(35,39,66,.05),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.4);
   --lg-spring:cubic-bezier(.16,1,.3,1);--lg-safe:env(safe-area-inset-bottom,0px);
   --lg-ambient-x:50%;--lg-ambient-y:20%;
   --v55-bg:var(--lg-canvas);--v55-card:var(--lg-solid);--v55-ink:var(--lg-ink);--v55-sub:var(--lg-sub);--v55-muted:var(--lg-muted);
@@ -1075,7 +1075,9 @@ button,input{font:inherit}button{touch-action:manipulation}button:focus-visible,
 
 /* Content hierarchy */
 .v55-section,.v55-task,.v56-store-overview,.qv62-card,.qv58-summary,.qv62-placeholder,.qv58-empty,.qv58-limit-note{
-  border:1px solid rgba(255,255,255,.82)!important;background:var(--lg-card)!important;box-shadow:var(--lg-card-shadow)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  border:1px solid rgba(255,255,255,.82)!important;background:var(--lg-card)!important;box-shadow:var(--lg-card-shadow)!important}
+.v55-section,.v55-task,.v56-store-overview,.qv58-summary{backdrop-filter:blur(22px) saturate(155%)!important;-webkit-backdrop-filter:blur(22px) saturate(155%)!important}
+.v55-priority,.v56-stock-row,.v55-store,.v55-donor,.v56-home-rank{backdrop-filter:blur(14px) saturate(140%)!important;-webkit-backdrop-filter:blur(14px) saturate(140%)!important}
 .v55-section{border-radius:23px!important;margin-top:12px!important;padding:17px!important}.v55-task{border-radius:19px!important;padding:14px!important;margin-top:10px!important}
 .v56-store-overview{border-radius:23px!important;padding:17px!important}.v55-sec-title{font-size:15px!important;font-weight:700!important;letter-spacing:-.25px!important}.v55-sec-sub{font-size:11px!important}
 .v55-summary{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.15)!important;border-radius:25px!important;padding:20px!important;background:linear-gradient(145deg,rgba(29,30,40,.97),rgba(38,38,53,.93))!important;box-shadow:0 20px 46px rgba(25,27,40,.18),inset 0 1px 0 rgba(255,255,255,.13)!important}
@@ -1143,11 +1145,15 @@ body.lg-dock-receded #v54Nav{transform:translateY(8px) scale(.985)!important;opa
 @media(max-width:520px){#v54Page,#queryPage{width:min(calc(100% - 16px),940px)!important}.v55-top{padding:11px 11px 10px!important}.v55-title{font-size:20px!important}.v55-section{border-radius:21px!important;padding:14px!important}.v55-summary{padding:17px!important}.v55-kpis{gap:6px!important}.v55-sheet{bottom:6px!important;width:calc(100% - 12px)!important;border-radius:27px!important}.qv7c-panel{padding:15px 16px!important;border-radius:25px!important}.qv7c-chip{width:44px!important;height:44px!important;border-radius:15px!important}.qv7c-title{font-size:19px!important}.updated{font-size:9.5px!important}#qv63SearchFloat{width:calc(100% - 20px)!important}}
 @media(max-width:350px){#v54Nav{width:calc(100% - 12px)!important;padding:5px!important}#v54Nav button span{font-size:9px!important}#v54Nav button svg{width:31px!important;height:31px!important}.v55-kpi b{font-size:15px!important}.qv7c-sub{display:none}}
 @media(max-width:767px){
-  body,body.v55-mode{background:linear-gradient(145deg,#f0eff8,#eef4f7)!important;background-attachment:scroll!important}
-  .lg-ambient{display:none!important}.lg-optical::before,.lg-optical::after{display:none!important}
-  .v55-top,#v54Nav,#queryPage .qv7c-panel,#queryPage .qv63-search-float .search-box,.v111-login-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-  .v55-top,#queryPage .qv7c-panel{background:rgba(255,255,255,.91)!important}#v54Nav,#queryPage .qv63-search-float .search-box{background:rgba(250,250,253,.95)!important}
-  .v55-section,.v55-task,.v56-store-overview,.qv62-card,.qv58-summary,.qv62-placeholder,.qv58-empty,.qv58-limit-note{box-shadow:0 5px 16px rgba(35,39,66,.045),inset 0 1px 0 rgba(255,255,255,.8)!important}
+  body,body.v55-mode{background:
+    radial-gradient(ellipse at var(--lg-ambient-x) var(--lg-ambient-y),rgba(134,117,237,.20),transparent 38%),
+    radial-gradient(ellipse at 98% 66%,rgba(90,185,220,.16),transparent 44%),
+    radial-gradient(ellipse at 8% 88%,rgba(182,153,243,.13),transparent 40%),
+    linear-gradient(145deg,#eef0f9 0%,#f5f6fa 46%,#ecf4f8 100%)!important;background-attachment:scroll!important}
+  .lg-optical::before,.lg-optical::after{display:none!important}
+  .v55-top,#v54Nav,#queryPage .qv7c-panel,#queryPage .qv63-search-float .search-box,.v111-login-card{backdrop-filter:blur(24px) saturate(160%)!important;-webkit-backdrop-filter:blur(24px) saturate(160%)!important}
+  .v55-top,#queryPage .qv7c-panel{background:linear-gradient(145deg,rgba(255,255,255,.80),rgba(255,255,255,.58))!important}#v54Nav,#queryPage .qv63-search-float .search-box{background:linear-gradient(145deg,rgba(252,252,255,.86),rgba(246,248,252,.72))!important}
+  .v55-section,.v55-task,.v56-store-overview,.qv62-card,.qv58-summary,.qv62-placeholder,.qv58-empty,.qv58-limit-note{box-shadow:0 14px 34px rgba(35,39,66,.11),0 3px 8px rgba(35,39,66,.05),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.4)!important}
   .v55-sheet-mask,.v55-sheet-mask.show{background:rgba(24,25,34,.25)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .v55-sheet,.v55-sheet.lg-optical{top:max(8px,env(safe-area-inset-top,0px))!important;bottom:auto!important;height:calc(100vh - 16px - env(safe-area-inset-top,0px) - var(--lg-safe))!important;height:calc(100dvh - 16px - env(safe-area-inset-top,0px) - var(--lg-safe))!important;max-height:none!important;width:calc(100% - 12px)!important;padding:13px 12px calc(14px + var(--lg-safe))!important;border-radius:26px!important;background:#f6f7fa!important;box-shadow:0 18px 48px rgba(17,19,30,.22),inset 0 1px 0 rgba(255,255,255,.95)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;transform:translate(-50%,calc(100% + 18px)) scale(.985)!important;transition:transform .3s var(--lg-spring)!important;scrollbar-width:none}
   .v55-sheet::-webkit-scrollbar{display:none}.v55-sheet-mask.show .v55-sheet{transform:translate(-50%,0) scale(1)!important}
@@ -1726,6 +1732,19 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 /* 标签/徽章按钮内文字严格垂直居中 */
 .v55-badge,.v55-state{display:inline-flex!important;align-items:center!important;justify-content:center!important;vertical-align:middle!important;min-height:20px!important}
 .v55-actions{align-items:center!important}
+
+/* 优先处理卡片独立化：像查库存卡片一样完整显示，不被父容器截断圆角 */
+.v55-priority{background:var(--lg-card)!important;border:1px solid var(--lg-line)!important;border-radius:17px!important;padding:13px 12px!important;margin-top:8px!important;box-shadow:var(--lg-card-shadow)!important}
+.v55-priority:first-child{margin-top:0!important;border-top:1px solid var(--lg-line)!important;padding-top:13px!important}
+.v55-priority + .v55-priority{border-top:1px solid var(--lg-line)!important}
+
+/* 三列小卡片内部文字/数字严格垂直居中 */
+.v55-q{min-height:60px!important;padding:8px 6px!important}
+.v55-q span,.v55-q b{display:block!important;margin:0!important;line-height:1.3!important;text-align:center!important}
+.v55-q span{margin-bottom:3px!important}
+.v55-q b{font-size:14px!important;font-weight:800!important}
+.v55-q.source{align-items:center!important;text-align:center!important}
+.v55-q.source b{font-size:14px!important;line-height:1.35!important}
 
 /* 长列表渲染加速：用 CSS containment 隔离每个卡片的布局/绘制，滚动和交互更跟手 */
 .v55-priority,
