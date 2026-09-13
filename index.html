@@ -1772,6 +1772,9 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 .v55-btn{min-height:40px!important;padding:9px 14px!important;font-size:12px!important}
 .v55-btn:disabled{opacity:.45!important}
 
+/* 登录页说明文字已删除：标题与表单间距补偿 */
+.v111-login-card h1{margin-bottom:24px!important}
+
 /* 小屏密度保护：避免标签换行挤爆 */
 @media(max-width:374px){
 .v56-stock-foot{gap:5px!important;flex-wrap:wrap!important}
@@ -1784,13 +1787,10 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
   <form class="v111-login-card" id="v111LoginForm" autocomplete="on">
     <div class="v111-login-mark">库存</div>
     <h1>李家村库存工作台</h1>
-    <p class="v111-login-lead">登录后进入李家村库存工作台（店长看全部，店员仅查库存）。</p>
     <label class="v111-field"><span>账号</span><input id="v111User" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
     <label class="v111-field"><span>密码</span><input id="v111Pass" name="password" type="password" autocomplete="current-password" required></label>
     <button class="v111-submit" type="submit">登录工作台</button>
     <div class="v111-login-error" id="v111LoginError" role="alert"></div>
-    <div class="v111-login-note">V11.4 正式版 · 登录状态有效 1 天</div>
-    <div class="v113-auth-caption">内部测试保护层 · 正式后台上线后应切换为服务端认证</div>
   </form>
 </section>
 <button class="v111-logout" id="v111Logout" type="button">退出登录</button>
@@ -1864,23 +1864,27 @@ window.LJC_DATA_DIAGNOSTICS=Object.freeze({
 // ==================== V8.0C 正式上线前搜索引擎审计重构 ====================
 // 原则：查询只在 17 家正式门店口径内；设备查询按 SKU 条件交集；无货绝不以配件补位；演示机默认隔离。
 const QUERY_STORES=new Set([
- '华为高新金鹰授权体验店','华为高新中大国际授权体验店','华为高新大茂城授权体验店','华为朝阳益田授权体验店',
- '华为浐灞优享授权体验店','华为大兴路龙湖授权体验店','华为李家村万达授权体验店','华为长安万科广场授权体验店',
+ '华为李家村万达授权体验店','华为高新金鹰授权体验店','华为高新中大国际授权体验店','华为高新大茂城授权体验店',
+ '华为朝阳益田授权体验店','华为浐灞优享授权体验店','华为大兴路龙湖授权体验店','华为长安万科广场授权体验店',
  '华为长乐授权体验店','华为凯德广场授权体验店','华为金辉环球授权体验店','华为西安SKP至臻店',
  '华为智能生活馆西安荟聚','华为智能生活馆西安大悦城','华为智能生活馆西安大唐不夜城',
- '华为智能生活馆西安高新万达','华为华阳城合作店'
+ '华为智能生活馆西安高新万达','华为华阳城合作店',
+ '华为DT51合作店','华为西研所分库','华为-售后实物库','华为-日日顺大库(临潼)','华为-大库','华为-市场部','乐奇大库',
+ '电信凤城四路店','电信小寨西路店','电信省广场店','电信电子城店','电信曲江金辉智慧营业厅',
+ '电信高陵马家湾店','电信高陵县局店','电信土门店','电信浐灞二路社区店','电信-市场部','电信宽带新装库'
 ]);
 
 // V11.0 门店限定搜索：商品条件与门店条件分层解析。仅识别查询词末尾门店别名。
 const QUERY_STORE_ALIASES=[
+ // ── 17 家华为主门店 ──
  ['华为李家村万达授权体验店',['华为李家村万达授权体验店','李家村万达','李家村','李']],
  ['华为高新金鹰授权体验店',['华为高新金鹰授权体验店','高新金鹰','金鹰']],
  ['华为高新中大国际授权体验店',['华为高新中大国际授权体验店','高新中大国际','中大国际','中大']],
  ['华为高新大茂城授权体验店',['华为高新大茂城授权体验店','高新大茂城','大茂城']],
  ['华为朝阳益田授权体验店',['华为朝阳益田授权体验店','朝阳益田','益田']],
  ['华为浐灞优享授权体验店',['华为浐灞优享授权体验店','浐灞优享','浐灞']],
- ['华为大兴路龙湖授权体验店',['华为大兴路龙湖授权体验店','大兴路龙湖','大兴龙湖','大兴路']],
- ['华为长安万科广场授权体验店',['华为长安万科广场授权体验店','长安万科广场','长安万科']],
+ ['华为大兴路龙湖授权体验店',['华为大兴路龙湖授权体验店','大兴路龙湖','大兴龙湖','大兴路','龙湖']],
+ ['华为长安万科广场授权体验店',['华为长安万科广场授权体验店','长安万科广场','长安万科','万科']],
  ['华为长乐授权体验店',['华为长乐授权体验店','长乐']],
  ['华为凯德广场授权体验店',['华为凯德广场授权体验店','凯德广场','凯德']],
  ['华为金辉环球授权体验店',['华为金辉环球授权体验店','金辉环球','金辉']],
@@ -1888,12 +1892,32 @@ const QUERY_STORE_ALIASES=[
  ['华为智能生活馆西安荟聚',['华为智能生活馆西安荟聚','西安荟聚','荟聚']],
  ['华为智能生活馆西安大悦城',['华为智能生活馆西安大悦城','西安大悦城','大悦城']],
  ['华为智能生活馆西安大唐不夜城',['华为智能生活馆西安大唐不夜城','大唐不夜城','不夜城']],
- ['华为智能生活馆西安高新万达',['华为智能生活馆西安高新万达','西安高新万达','高新万达']],
- ['华为华阳城合作店',['华为华阳城合作店','华阳城']]
+ ['华为智能生活馆西安高新万达',['华为智能生活馆西安高新万达','西安高新万达','高新万达','万达']],
+ ['华为华阳城合作店',['华为华阳城合作店','华阳城']],
+ // ── 华为其它仓 ──
+ ['华为DT51合作店',['华为DT51合作店','DT51合作店','DT51']],
+ ['华为西研所分库',['华为西研所分库','西研所']],
+ ['华为-售后实物库',['华为-售后实物库','售后实物库','售后库']],
+ ['华为-日日顺大库(临潼)',['华为-日日顺大库(临潼)','日日顺大库','日日顺']],
+ ['华为-大库',['华为-大库','华为大库','大库']],
+ ['华为-市场部',['华为-市场部','华为市场部']],
+ ['乐奇大库',['乐奇大库','乐奇']],
+ // ── 电信系门店 ──
+ ['电信凤城四路店',['电信凤城四路店','凤城四路']],
+ ['电信小寨西路店',['电信小寨西路店','小寨西路','小寨']],
+ ['电信省广场店',['电信省广场店','省广场']],
+ ['电信电子城店',['电信电子城店','电子城']],
+ ['电信曲江金辉智慧营业厅',['电信曲江金辉智慧营业厅','曲江金辉','曲江金辉营业厅']],
+ ['电信高陵马家湾店',['电信高陵马家湾店','高陵马家湾','马家湾']],
+ ['电信高陵县局店',['电信高陵县局店','高陵县局']],
+ ['电信土门店',['电信土门店','土门']],
+ ['电信浐灞二路社区店',['电信浐灞二路社区店','浐灞二路']],
+ ['电信-市场部',['电信-市场部','电信市场部']],
+ ['电信宽带新装库',['电信宽带新装库','宽带新装']]
 ];
 function escapeQueryRe(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 const QUERY_STORE_SUFFIXES=[];
-for(const [store,aliases] of QUERY_STORE_ALIASES)for(const alias of aliases){const a=normalizeSearchChars(alias).trim();if(a)QUERY_STORE_SUFFIXES.push({store,alias:a,re:new RegExp(escapeQueryRe(a).split('').join('\\s*')+'(?:\\s*(?:门店|店))?\\s*$','i')});}
+for(const [store,aliases] of QUERY_STORE_ALIASES)for(const alias of aliases){const a=normalizeSearchChars(alias).trim();if(a)QUERY_STORE_SUFFIXES.push({store,alias:a,re:new RegExp(a.split('').map(ch=>escapeQueryRe(ch)).join('\\s*')+'(?:\\s*(?:门店|店))?\\s*$','i')});}
 QUERY_STORE_SUFFIXES.sort((a,b)=>b.alias.length-a.alias.length);
 function parseQueryStoreIntent(raw){const normalized=normalizeSearchChars(raw).trim();if(!normalized)return {raw:normalized,productQ:'',store:'',alias:'',mode:'none'};for(const def of QUERY_STORE_SUFFIXES){const m=normalized.match(def.re);if(!m)continue;const productQ=normalized.slice(0,m.index).trim().replace(/[，,、|]+$/,'').trim();return {raw:normalized,productQ,store:def.store,alias:def.alias,mode:'store'};}return {raw:normalized,productQ:normalized,store:'',alias:'',mode:'none'};}
 const DEVICE_CATS=new Set(['手机','平板电脑','穿戴','电脑','音频','智慧屏']);
