@@ -2397,6 +2397,11 @@ const STORES=[
  '华为长乐授权体验店','华为凯德广场授权体验店','华为金辉环球授权体验店','华为西安SKP至臻店',
  '华为智能生活馆西安荟聚','华为智能生活馆西安大悦城','华为智能生活馆西安大唐不夜城',
  '华为智能生活馆西安高新万达','华为华阳城合作店'];
+/* 可调拨白名单：17家兄弟店 + 晨哥拍板追加的华为系大库(4) + 纯电信门店(9)，共30个库区 */
+const TRANSFER_STORES=new Set([...STORES,
+ '华为-大库','华为-市场部','华为西研所分库','华为DT51合作店门店仓',
+ '电信小寨西路店','电信浐灞二路社区店','电信曲江金辉智慧营业厅','电信高陵县局店',
+ '电信省广场店','电信电子城店','电信土门店','电信凤城四路店','电信高陵马家湾店']);
 const CORE=new Set(['手机','平板电脑','穿戴','电脑','音频','智慧屏']);
 const page=document.getElementById('v54Page'),query=document.getElementById('queryPage'),sheet=document.getElementById('v54Sheet'),sheetBody=document.getElementById('v54SheetBody');
 let tab='query',scope='core',restockFilter='need',restockQ='',supplyMode='pool',storeScope='all',storeSort='desc',storeStatus='all',storeCat='all',storeQ='';
@@ -2428,7 +2433,7 @@ function makeSku(){
    const ref=Math.max(1,Math.ceil(median(pos))),low=Math.max(1,Math.ceil(ref*.6)),high=Math.max(ref+2,Math.ceil(ref*1.6));
    let status='healthy';if(own===0)status='out';else if(own<low)status='low';else if(own>high)status='high';
    const target=ref,suggest=Math.max(0,target-own);
-   const donors=STORES.filter(s=>s!==HOME).map(s=>({store:s,a:g.by.get(s)||0})).filter(x=>x.a>0).sort((a,b)=>b.a-a.a);
+   const donors=[...TRANSFER_STORES].filter(s=>s!==HOME).map(s=>({store:s,a:g.byAll?.get(s)||g.by.get(s)||0})).filter(x=>x.a>0).sort((a,b)=>b.a-a.a);
    const priority=(status==='out'?100:status==='low'?60:0)+cover*2+suggest*3+(g.nameConflict?1:0);
    out.push({...g,own,total,cover,ref,low,high,status,target,suggest,donors,priority});
  }
@@ -2440,8 +2445,8 @@ function sanitizePersistentState(){
  const cleanCart={};
  if(cart&&typeof cart==='object'&&!Array.isArray(cart))for(const [code,c] of Object.entries(cart)){
    const x=byCode.get(code);if(!x||!c||typeof c!=='object')continue;
-   const store=String(c.store||'');if(!STORES.includes(store)||store===HOME)continue;
-   const stock=Math.max(0,Number(x.by.get(store))||0);if(stock<=0)continue;
+   const store=String(c.store||'');if(!TRANSFER_STORES.has(store)||store===HOME)continue;
+   const stock=Math.max(0,Number(x.byAll?.get(store)||x.by.get(store))||0);if(stock<=0)continue;
    const state=VALID_TASK_STATES.has(c.state)?c.state:'selected';const qty=Math.max(1,Math.min(stock,Math.floor(Number(c.qty)||1)));
    cleanCart[code]={code,store,qty,state};
  }
@@ -2668,14 +2673,14 @@ function addBest(code){
  const x=byCode.get(code);if(!x)return;if(cart[code]){supplyMode='cart';switchTab('supply');return}const d=bestDonor(x);if(!d){openSku(code);return}
  const qty=Math.max(1,Math.min(x.suggest||1,d.a));cart[code]={code,store:d.store,qty,state:'selected'};taskState[code]='selected';saveAll();render();
 }
-function addFromStore(code,store){const x=byCode.get(code);if(!x)return;const stock=x.by.get(store)||0;if(!stock)return;cart[code]={code,store,qty:Math.max(1,Math.min(x.suggest||1,stock)),state:'selected'};taskState[code]='selected';saveAll()}
+function addFromStore(code,store){const x=byCode.get(code);if(!x)return;const stock=x.byAll?.get(store)||x.by.get(store)||0;if(!stock)return;cart[code]={code,store,qty:Math.max(1,Math.min(x.suggest||1,stock)),state:'selected'};taskState[code]='selected';saveAll()}
 function advanceState(code){const c=cart[code];if(!c)return;if(c.state==='selected')c.state='contacted';else if(c.state==='contacted')c.state='confirmed';else if(c.state==='confirmed')c.state='done';else return;taskState[code]=c.state;saveAll();renderSupply()}
-function changeQty(code,delta){const c=cart[code],x=byCode.get(code);if(!c||!x)return;const max=Math.max(1,x.by.get(c.store)||1);c.qty=Math.max(1,Math.min(max,(c.qty||1)+delta));saveAll();renderSupply()}
+function changeQty(code,delta){const c=cart[code],x=byCode.get(code);if(!c||!x)return;const max=Math.max(1,x.byAll?.get(c.store)||x.by.get(c.store)||1);c.qty=Math.max(1,Math.min(max,(c.qty||1)+delta));saveAll();renderSupply()}
 function openSku(code){
- const x=byCode.get(code);if(!x)return;const storeSet=new Set(STORES);
+ const x=byCode.get(code);if(!x)return;const storeSet=TRANSFER_STORES;
  const all=(x.byAll?[...x.byAll.entries()].map(([store,a])=>({store,a})):STORES.map(s=>({store:s,a:x.by.get(s)||0})))
    .filter(d=>d.a>0||d.store===HOME).sort((a,b)=>(a.store===HOME?-1:b.store===HOME?1:b.a-a.a)),max=Math.max(1,...all.map(d=>d.a));
- sheetBody.innerHTML=`<div class="v55-sheet-head"><h3>${esc(x.name)}</h3><button class="v55-x" id="v55Close">×</button></div><div class="v55-code">${esc(x.code)} · ${esc(x.cat)}</div>${x.nameConflict?`<div class="v55-warning">⚠ 同一商品编码存在 ${x.nameVariants.length} 个名称版本。当前显示使用出现次数最多、同次数时更完整的名称；调货前建议核对商品档案。</div>`:''}<div class="v55-sheet-card"><div class="v55-sheet-grid"><div class="v55-sheet-stat"><span>李家村可用</span><b>${x.own}</b></div><div class="v55-sheet-stat"><span>参考水位</span><b>${x.ref}</b></div><div class="v55-sheet-stat"><span>建议补</span><b>${x.suggest}</b></div></div></div><div class="v55-sheet-card"><div class="v55-sec-title">库存分布（全部仓库）</div><div class="v55-sec-sub">库存高的仓库优先；★ 为17家可调拨门店；本店单独标记</div>${all.map((d,i)=>`<div class="v55-donor"><div class="v55-donor-top"><div class="v55-donor-name">${d.store===HOME?'📍 李家村（本店）':(storeSet.has(d.store)?((i<4&&d.a>0?'★ ':'')):'')+esc(shortStore(d.store))}${!storeSet.has(d.store)&&d.store!==HOME?'<span class="v56-mini" style="margin-left:6px">白名单外</span>':''}</div><div class="v55-donor-qty" style="${d.a===0?'color:#b7bbc7':''}">${d.a}</div></div><div class="v55-donor-bar"><i style="width:${Math.round(d.a/max*100)}%;${d.store===HOME?'background:#6657d9':''}"></i></div>${storeSet.has(d.store)&&d.store!==HOME&&d.a>0&&(x.status==='out'||x.status==='low')&&stateOf(x.code)!=='done'?`<div class="v55-donor-actions"><button class="v55-btn primary" data-cart="${esc(d.store)}">从这家调货</button></div>`:''}</div>`).join('')}</div>`;
+ sheetBody.innerHTML=`<div class="v55-sheet-head"><h3>${esc(x.name)}</h3><button class="v55-x" id="v55Close">×</button></div><div class="v55-code">${esc(x.code)} · ${esc(x.cat)}</div>${x.nameConflict?`<div class="v55-warning">⚠ 同一商品编码存在 ${x.nameVariants.length} 个名称版本。当前显示使用出现次数最多、同次数时更完整的名称；调货前建议核对商品档案。</div>`:''}<div class="v55-sheet-card"><div class="v55-sheet-grid"><div class="v55-sheet-stat"><span>李家村可用</span><b>${x.own}</b></div><div class="v55-sheet-stat"><span>参考水位</span><b>${x.ref}</b></div><div class="v55-sheet-stat"><span>建议补</span><b>${x.suggest}</b></div></div></div><div class="v55-sheet-card"><div class="v55-sec-title">库存分布（全部仓库）</div><div class="v55-sec-sub">库存高的仓库优先；★ 为可调拨库区；本店单独标记</div>${all.map((d,i)=>`<div class="v55-donor"><div class="v55-donor-top"><div class="v55-donor-name">${d.store===HOME?'📍 李家村（本店）':(storeSet.has(d.store)?((i<4&&d.a>0?'★ ':'')):'')+esc(shortStore(d.store))}${!storeSet.has(d.store)&&d.store!==HOME?'<span class="v56-mini" style="margin-left:6px">不可调拨</span>':''}</div><div class="v55-donor-qty" style="${d.a===0?'color:#b7bbc7':''}">${d.a}</div></div><div class="v55-donor-bar"><i style="width:${Math.round(d.a/max*100)}%;${d.store===HOME?'background:#6657d9':''}"></i></div>${storeSet.has(d.store)&&d.store!==HOME&&d.a>0&&(x.status==='out'||x.status==='low')&&stateOf(x.code)!=='done'?`<div class="v55-donor-actions"><button class="v55-btn primary" data-cart="${esc(d.store)}">从这家调货</button></div>`:''}</div>`).join('')}</div>`;
  document.getElementById('v55Close').onclick=closeSheet;sheetBody.querySelectorAll('[data-cart]').forEach(b=>b.onclick=()=>{addFromStore(x.code,b.dataset.cart);closeSheet();supplyMode='cart';switchTab('supply')});sheet.classList.add('show');
 }
 function openStore(store){
