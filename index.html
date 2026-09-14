@@ -2409,7 +2409,7 @@ let cart={};try{cart=JSON.parse(localStorage.getItem('ljc-transfer-v55')||'{}')}
 let taskState={};try{taskState=JSON.parse(localStorage.getItem('ljc-task-v55')||'{}')}catch(e){taskState={}}
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const median=a=>{if(!a.length)return 0;const b=[...a].sort((x,y)=>x-y),i=Math.floor(b.length/2);return b.length%2?b[i]:(b[i-1]+b[i])/2};
-const shortStore=s=>s.replace(/^华为/,'').replace('智能生活馆西安','').replace('授权体验店','').replace('至臻店','').replace('合作店','');
+const shortStore=s=>s; /* 2026-09-15 晨哥要求：调拨/货源/库存分布等所有门店一律显示全称，不再缩写 */
 const stateLabel=s=>s==='contacted'?'已联系':s==='confirmed'?'已确认':s==='done'?'已完成':s==='selected'?'已选货源':'待处理';
 const stateClass=s=>s==='contacted'?'contact':s==='confirmed'?'confirm':s==='done'?'done':'';
 function makeSku(){
