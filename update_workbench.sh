@@ -15,6 +15,24 @@ TODAY=$(date +%Y%m%d)
 
 cd "$KUCUNOS" || exit 1
 
+# ---------- 推送防护（防 SSH 半死连接卡死数小时）----------
+# 根因复盘：曾因 `client_loop: send disconnect: Broken pipe` 让 git push 挂起 ~2h，
+#           导致 launchd 后续 6 个 15 分钟档全部被跳过（不重叠规则）。
+# 修复：① SSH 保活 → 死连接 ~45s 内被 SSH 自己掐断报错，不再无限挂；
+#       ② mac_timeout → macOS 原生超时包裹（无 GNU coreutils 依赖）；
+#       ③ push 失败变非致命 → 下个 15 分钟档自动重试，绝不阻塞调度。
+export GIT_SSH_COMMAND="ssh -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o BatchMode=yes"
+mac_timeout() {  # $1=秒数  后续=命令；超时返回 124
+  local t=$1; shift
+  "$@" & local pid=$!
+  local i=0
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep 1; i=$((i+1))
+    if [ "$i" -ge "$t" ]; then kill -9 "$pid" 2>/dev/null; wait "$pid" 2>/dev/null; return 124; fi
+  done
+  wait "$pid"; return $?
+}
+
 # ---------- 确保 9223 经理 Chrome 会话（带经理登录态 + 存量查询已开）----------
 ensure_9223() {
   if curl -s --max-time 2 http://127.0.0.1:9223/json/version >/dev/null 2>&1; then
@@ -39,12 +57,11 @@ PY
 
 # ---------- 拉数：直连接口优先，xlsx 老路兜底 ----------
 ensure_9223 || { echo "!! 9223 会话拉起失败，中止"; exit 1; }
-
 # 拉数逻辑（直连接口优先，xlsx 老路兜底）
 # 成功向 stdout 输出 csv 路径；失败向 stdout 输出空，由外层判断是否走重登恢复
 pull_csv() {
   local csv=""
-  if csv=$("$PY" "$KUCUNOS/pull_live.py") && [ -n "$csv" ]; then
+  if csv=$(mac_timeout 300 "$PY" "$KUCUNOS/pull_live.py") && [ -n "$csv" ]; then
     echo "=== [1/4] 直连接口拉数成功 -> $csv ===" >&2
     printf '%s' "$csv"; return 0
   fi
@@ -74,6 +91,13 @@ if [ -z "$CSV" ]; then
   fi
 fi
 
+echo "=== [1.5/4] kucun 仓同步（复用同一份 CSV，失败不影响工作台本体）==="
+if bash "$KUCUNOS/update_kucun_page.sh" "$CSV"; then
+  echo "[kucun] 同步步骤完成"
+else
+  echo "⚠️ kucun 同步失败（非致命），本档先保证工作台更新，下档自动重试"
+fi
+
 echo "=== [2/4] 注入 V11.4 底表（含新鲜度闸门）==="
 "$PY" "$KUCUNOS/build_v11_inv.py" "$CSV"
 # build_v11_inv.py 内部：数据无变化 -> 不写 index.html（git diff 为空 -> 跳过）
@@ -90,10 +114,36 @@ if [ "${PUSH:-}" != "1" ]; then
   exit 0
 fi
 
-git fetch origin 2>&1 | tail -2
+# fetch：带超时，失败不致命（用本地基线继续）
+mac_timeout 60 git fetch origin 2>&1 | tail -2 || echo "⚠️ fetch 超时/失败，用本地基线继续"
 git add index.html
 git commit -m "auto(kucunos): 定时更新 V11.4 现存量 $(date '+%Y-%m-%d %H:%M')" 2>&1 | tail -3
-git push origin main 2>&1 | tail -5
+# push：硬超时 150s + 失败非致命（下个 15 分钟档自动重试），绝不再阻塞调度
+echo "[push] git push origin main（mac_timeout 150s + SSH 保活）"
+mac_timeout 150 git push origin main > /tmp/kucunos_push.log 2>&1
+PUSH_RC=$?
+# ── 推送失败告警计数（2026-09-24 晨哥要求"推送失败必须报群里"）：连续失败≥2次(30分钟未上线)
+#    企微告警；此后每+4次(约1小时)重复提醒防遗忘；任一次成功即清零。去重防 15 分钟档刷屏。
+KUCUNOS_NOTIFY="/Users/mac/.local/share/TeleAgent/TeleAgent的工作空间/shop/notify_fail.py"
+FAILCNT_FILE="/tmp/kucunos_push_fail.count"
+if [ "$PUSH_RC" -ne 0 ]; then
+  echo "⚠️ push 超时/失败（退出码 $PUSH_RC），本次上线未成功，下个 15 分钟档将自动重试"
+  tail -5 /tmp/kucunos_push.log
+  FAILCNT=$(( $(cat "$FAILCNT_FILE" 2>/dev/null || echo 0) + 1 ))
+  echo "$FAILCNT" > "$FAILCNT_FILE"
+  if [ "$FAILCNT" -eq 2 ] || [ $(( (FAILCNT - 2) % 4 )) -eq 0 ]; then
+    /usr/bin/python3 "$KUCUNOS_NOTIFY" --stage "库存工作台推送失败(连续${FAILCNT}次)" \
+      --exit-code "$PUSH_RC" --log /tmp/kucunos_push.log --tail 8 \
+      || echo "  ⚠️ 告警推送也失败，详见 notify_fail 日志" >&2
+    echo "📢 已推送企微告警（连续失败 $FAILCNT 次）"
+  fi
+else
+  if [ -f "$FAILCNT_FILE" ] && [ "$(cat "$FAILCNT_FILE" 2>/dev/null || echo 0)" -gt 0 ]; then
+    echo "✅ 本次 push 成功，此前连续失败计数已清零"
+  fi
+  echo 0 > "$FAILCNT_FILE"
+  tail -5 /tmp/kucunos_push.log
+fi
 
 echo "=== 线上 SHA 校验（GitHub Pages 有缓存，轮询等待）==="
 LOCAL=$(shasum -a 256 index.html | cut -d' ' -f1)
@@ -121,7 +171,7 @@ if [ "$MATCHED" != "1" ]; then
   if [ "$ST" != "built" ] || [ "${DEP_N:-0}" = "0" ]; then
     echo "  判定构建卡死（无 deployment 或 status≠built），推送空提交重新触发…"
     if git commit --allow-empty -m "chore(kucunos): re-trigger GitHub Pages build (SHA 校验自愈 $(date '+%H:%M'))" && \
-       git push origin main 2>&1 | tail -3; then
+       mac_timeout 150 git push origin main 2>&1 | tail -3; then
       echo "  已重新触发，二次轮询（最多 6 次 / 90s）…"
       for i in $(seq 1 6); do
         sleep 15
