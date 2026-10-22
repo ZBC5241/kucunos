@@ -1,6 +1,7 @@
 # 临时数据/构建产物（构建时生成，不入库）
 现存量_*.csv
 inventory.gen.json
+data/sales-cache.json
 
 # 项目记忆（含 MEMORY.md，勿入公网仓库）
 .workbuddy/

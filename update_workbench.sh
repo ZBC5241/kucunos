@@ -36,10 +36,31 @@ mac_timeout() {  # $1=秒数  后续=命令；超时返回 124
 # ---------- 确保 9223 经理 Chrome 会话（带经理登录态 + 存量查询已开）----------
 ensure_9223() {
   if curl -s --max-time 2 http://127.0.0.1:9223/json/version >/dev/null 2>&1; then
-    echo "[9223] 已运行，复用现有会话"
-    return 0
+    # ⚠️ 2026-10-14 事故修复：端口通 ≠ CDP 可用。
+    # 残留 Chrome 实例（/tmp/cdp-chrome-18hao，缺 --remote-allow-origins）抢到 9223，
+    # HTTP /json/version 正常返回，但 WebSocket 握手 403 → 178 次更新全失败、2 天数据断更。
+    # 必须实测一次 CDP 握手，失败即杀掉重启（带正确参数重拉 + 自动 CAS 登录）。
+    if "$PY" - <<'PY' 2>/dev/null
+import sys
+sys.path.insert(0, "/Users/mac/WorkBuddy/Claw")
+import stock_pull as sp
+sp.get_bws()
+PY
+    then
+      echo "[9223] 已运行且 CDP 握手正常，复用现有会话"
+      return 0
+    fi
+    echo "[9223] ⚠️ CDP 握手失败（残留实例缺 --remote-allow-origins），杀掉重启"
+    pkill -f "remote-debugging-port=9223" 2>/dev/null
+    # 轮询直到端口真正释放，避免 ensure_chrome 复用未死旧实例 → 又 403（10-15 事故根因）
+    for _ in $(seq 1 10); do
+      if ! curl -s --max-time 2 http://127.0.0.1:9223/json/version >/dev/null 2>&1; then
+        break
+      fi
+      sleep 1
+    done
   fi
-  echo "[9223] 未运行，拉起经理 Chrome 会话（/tmp/mgr-chrome，钥匙串自动 CAS 登录）…"
+  echo "[9223] 拉起经理 Chrome 会话（/tmp/mgr-chrome，钥匙串自动 CAS 登录）…"
   "$PY" - <<'PY' || return 1
 import sys, time
 sys.path.insert(0, "/Users/mac/WorkBuddy/Claw")
@@ -103,8 +124,14 @@ echo "=== [2/4] 注入 V11.4 底表（含新鲜度闸门）==="
 # build_v11_inv.py 内部：数据无变化 -> 不写 index.html（git diff 为空 -> 跳过）
 #                    数据有变化 -> 写 index.html（git diff 非空 -> 提交）
 
+echo "=== [2.5/4] 拉销售数据（缓存4h，失败用旧缓存不阻塞）==="
+"$PY" "$KUCUNOS/pull_sales.py" || echo "⚠️ 销售数据拉取失败，使用旧缓存（备货清单数据可能过期）"
+
+echo "=== [2.6/4] 生成「今日该备的货」清单并注入 ==="
+"$PY" "$KUCUNOS/build_restock.py" || echo "⚠️ 备货清单生成失败（不影响库存数据本身，下档自动重试）"
+
 if git diff --quiet index.html; then
-  echo "[skip] index.html 无变化（现存量与当前一致），不提交不推送"
+  echo "[skip] index.html 无变化（现存量与备货清单均与当前一致），不提交不推送"
   exit 0
 fi
 
@@ -117,7 +144,7 @@ fi
 # fetch：带超时，失败不致命（用本地基线继续）
 mac_timeout 60 git fetch origin 2>&1 | tail -2 || echo "⚠️ fetch 超时/失败，用本地基线继续"
 git add index.html
-git commit -m "auto(kucunos): 定时更新 V11.4 现存量 $(date '+%Y-%m-%d %H:%M')" 2>&1 | tail -3
+git commit -m "auto(kucunos): 定时更新（现存量+备货清单） $(date '+%Y-%m-%d %H:%M')" 2>&1 | tail -3
 # push：硬超时 150s + 失败非致命（下个 15 分钟档自动重试），绝不再阻塞调度
 echo "[push] git push origin main（mac_timeout 150s + SSH 保活）"
 mac_timeout 150 git push origin main > /tmp/kucunos_push.log 2>&1
