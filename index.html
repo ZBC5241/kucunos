@@ -2834,5 +2834,40 @@ if(readSession())openWorkbench();else showLogin();
   window.LJC_WORKBENCH_GLASS_INFO=Object.freeze({version:'2.2-mobile-first',features:['desktop-pointer-specular','desktop-spring-press','desktop-material-ripple','incremental-dom-binding','mobile-static-material','mobile-content-visibility','compact-mobile-sheet','floating-five-tab-dock','dark-mode','reduced-motion','reduced-transparency','performance-tier','safe-area','accessibility-labels'],renderer:'CSS compositing + Web Animations'});
 })();
 </script>
+<style>.qv62-price{display:flex;flex-direction:column;justify-content:center;gap:2px;padding-left:12px;margin-left:2px;border-left:1px solid #ececf0;flex:0 0 auto;align-self:center;text-align:left}
+.qv62-price .orig{color:#9aa0a6;font-size:11px}
+.qv62-price .orig.cut-orig{text-decoration:line-through}
+.qv62-price .cut{color:#e53935;font-size:12px}
+.qv62-price .final{color:#e53935;font-weight:700;font-size:15px;line-height:1.15}
+.qv62-price .np{color:#bdbdbd;font-size:11px}</style>
+<script src="promoData.js"></script>
+<script>(function(){
+  if(!window.PRICE_DATA){console.warn('promoData.js 未加载');return;}
+  var P=window.PRICE_DATA,M=window.PROMO_DATA||{};
+  function priceHTML(code){
+    var pr=P[code],promos=M[code]||[];
+    if(!pr||pr.retail==null)return '<span class="np">无价</span>';
+    var retail=pr.retail;
+    var act=promos.filter(function(x){return x.valid;});
+    var cut=0;act.forEach(function(x){if(x.cut>cut)cut=x.cut;});
+    if(cut>0){
+      return '<span class="orig cut-orig">原价 '+retail+'</span><span class="cut">直降'+cut+'</span><span class="final">到手 '+(retail-cut)+'</span>';
+    }
+    return '<span class="orig">原价 '+retail+'</span>';
+  }
+  function decorate(card){
+    if(card.querySelector('.qv62-price'))return;
+    var codeEl=card.querySelector('.qv62-code');
+    var qty=card.querySelector('.qv62-qty');
+    if(!codeEl||!qty)return;
+    var code=(codeEl.textContent||'').trim();
+    qty.insertAdjacentHTML('beforebegin','<div class="qv62-price">'+priceHTML(code)+'</div>');
+  }
+  function decorateAll(root){(root||document).querySelectorAll('.qv62-card').forEach(decorate);}
+  decorateAll(document);
+  if(window.MutationObserver){new MutationObserver(function(){decorateAll(document);}).observe(document.body,{childList:true,subtree:true});}
+  document.addEventListener('input',function(){setTimeout(function(){decorateAll(document);},300);});
+  window.addEventListener('load',function(){decorateAll(document);});
+})();</script>
 </body>
 </html>
