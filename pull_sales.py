@@ -19,8 +19,14 @@ pull_sales.py —— 直连用友「销售分析」报表接口，拉李家村�
 缓存：data/sales-cache.json
   {"fetched_at":..., "source":"live", "recordCountRaw":..., "dedupCount":...,
    "homeCount":..., "windowStart":"YYYY-MM-DD", "windowEnd":"YYYY-MM-DD",
-   "records":[{"sku":"...", "d":"YYYY-MM-DD", "qty":3}, ...]}
-  records 只保留最近 KEEP_DAYS 天的明细（按 SKU×日期 粒度足够算任意窗口）。
+   "records":[{"sku":"...", "d":"YYYY-MM-DD", "qty":3, "money":5999.0,
+               "neg":"s|r", "emp":"张博晨"}, ...]}
+  records 只保留最近 KEEP_DAYS 天的明细（按 单据行 粒度）。
+  字段口径（2026-10-23 实测）：
+   qty   = fQuantity（退货行为负数，天然冲减净销量）
+   money = fNetMoney（实收金额，退货行为负）
+   neg   = iNegative（销售/退货）
+   emp   = iEmployeeid_name（销售员，供后续业绩分析）
 
 策略：
   - 缓存 < MAX_AGE(4h) → 直接复用，不联网（15 分钟自动化档位不会每次联网）；
@@ -184,6 +190,7 @@ def main():
     end_d = datetime.date.fromisoformat(window_end)
     start_d = end_d - datetime.timedelta(days=KEEP_DAYS - 1)
     kept = []
+    neg_stat = {"销售": 0, "退货": 0}
     for r in home_rows:
         d = str(r.get("dDate") or "")[:10]
         if d < start_d.isoformat():
@@ -195,7 +202,15 @@ def main():
             qty = float(r.get("fQuantity") or 0)
         except Exception:
             qty = 0.0
-        kept.append({"sku": sku, "d": d, "qty": qty})
+        try:
+            money = float(r.get("fNetMoney") or r.get("fMoney") or 0)
+        except Exception:
+            money = 0.0
+        neg = str(r.get("iNegative") or "销售")
+        neg_stat[neg] = neg_stat.get(neg, 0) + 1
+        emp = str(r.get("iEmployeeid_name") or "").strip()
+        kept.append({"sku": sku, "d": d, "qty": qty, "money": money,
+                     "neg": neg, "emp": emp})
 
     atomic_write_json(CACHE, {
         "fetched_at": time.time(),
@@ -210,6 +225,7 @@ def main():
     log("✓ 销售缓存已写入 %s" % CACHE)
     log("  原始 %d 行 → 去重 %d → 李家村 %d → 最近%d天 %d 行（截至 %s）"
         % (raw_count, len(all_rows), len(home_rows), KEEP_DAYS, len(kept), window_end))
+    log("  [正负向] %s" % neg_stat)
     log("  [计时] 耗时 %.1fs" % (time.time() - t0))
     print(CACHE)
     return 0

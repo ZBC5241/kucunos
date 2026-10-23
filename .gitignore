@@ -2,6 +2,7 @@
 现存量_*.csv
 inventory.gen.json
 data/sales-cache.json
+__pycache__/
 
 # 项目记忆（含 MEMORY.md，勿入公网仓库）
 .workbuddy/
