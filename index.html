@@ -1726,6 +1726,18 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 .v55-priority{background:var(--lg-card)!important;border:1px solid var(--lg-line)!important;border-radius:17px!important;padding:13px 12px!important;margin-top:8px!important;box-shadow:var(--lg-card-shadow)!important}
 .v55-priority:first-child{margin-top:0!important;border-top:1px solid var(--lg-line)!important;padding-top:13px!important}
 .v55-priority + .v55-priority{border-top:1px solid var(--lg-line)!important}
+/* 紧凑备货卡：两行结构，一屏可览 8~10 款 */
+.v55-pcard{background:var(--lg-card);border:1px solid var(--lg-line);border-radius:13px;padding:9px 12px;margin-top:7px;cursor:pointer;box-shadow:var(--lg-card-shadow);display:flex;flex-direction:column;gap:5px;transition:border-color var(--evo-tr, .25s),transform .2s}
+.v55-pcard:hover{border-color:var(--lg-strong,rgba(10,124,240,.45))}
+.v55-pcard-row{display:flex;align-items:center;gap:8px;min-width:0}
+.v55-pcard-row .v55-badge{flex-shrink:0}
+.v55-pcard-name{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--lg-text,#1d1d1f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v55-pcard-row .v55-trend{flex-shrink:0}
+.v55-pcard-meta{display:flex;align-items:center;gap:11px;font-size:12px;color:var(--lg-muted,#9aa0ad);white-space:nowrap;overflow:hidden;padding-left:2px}
+.v55-pcard-meta b{color:var(--lg-text,#1d1d1f);font-weight:600}
+.v55-pcard-meta .warn{color:#d98b19;font-weight:600}
+.v55-pcard-meta .none{color:#df4d4d;font-weight:600}
+.v55-pcard .v55-btn{flex-shrink:0;padding:5px 12px;font-size:12px;border-radius:9px;margin-left:auto}
 
 /* 三列小卡片内部文字/数字严格垂直居中 */
 .v55-q{min-height:60px!important;padding:8px 6px!important}
@@ -2533,10 +2545,10 @@ function restockPlanCard(x){
   const stTxt={selected:'已加入调拨',contacted:'已联系',confirmed:'已确认',done:'已完成'};
   const trend=x.trend==='up'?`<span class="v55-trend up">↑${x.s7p>=3?x.trendPct+'%':'近7天'+x.s7+'件'}</span>`:(x.trend==='down'?`<span class="v55-trend down">↓${x.s7p>=3?Math.abs(x.trendPct)+'%':'近7天'+x.s7+'件'}</span>`:'');
   const hasDonor=!!(x.donor&&x.donor.qty>0);
-  const donorTxt=hasDonor?((x.fromHub?'向大库要货':'货源')+'：'+esc(shortStore(x.donor.store))+' · '+x.donor.qty+' 件'+(x.donor.qty<x.suggest?' · ⚠️货源偏紧':'')):'全系统暂无可调货源 · 需采购申请';
-  const extra=x.noStock?('断货每天约损失 '+x.lossPerDay+' 元'):((x.daysLeft!=null&&x.daysLeft<7)?('库存仅够卖 '+x.daysLeft+' 天'):'');
+  const sellTxt=x.noStock?`<span>断货损 <b>${x.lossPerDay}</b>/天</span>`:((x.daysLeft!=null)?`<span>可卖 <b>${x.daysLeft}</b> 天</span>`:'');
+  const donorTxt=hasDonor?`<span>货源 <b>${esc(shortStore(x.donor.store))}·${x.donor.qty}件</b></span>${x.donor.qty<x.suggest?'<span class="warn">⚠️货源偏紧</span>':''}`:'<span class="none">全系统无货 · 需采购</span>';
   const btn=hasDonor?`<button class="v55-btn primary" data-add="${esc(x.code)}" ${inCart&&st!=='done'?'disabled':''}>${inCart?(stTxt[st]||'已加入调拨'):'加入调拨'}</button>`:`<button class="v55-btn neutral" disabled>需采购</button>`;
-  return `<div class="v55-priority"><div class="v55-rowtop"><span class="v55-badge ${gc}">${bl}</span><div class="v55-name">${esc(x.name)}</div>${trend}</div><div class="v55-code">${esc(x.code)} · ${esc(x.cat)} · 近30天售 ${x.sold14}${x.own>0?' · 本店可售 '+x.own:''}</div><div class="v55-quick"><div class="v55-q"><span>日均销量</span><b>${x.daily}</b></div><div class="v55-q"><span>建议补</span><b>${x.suggest}</b></div><div class="v55-q source"><span>${x.noStock?'断货损失':'库存可卖'}</span><b>${x.noStock?(x.lossPerDay+' 元/天'):(x.daysLeft!=null?x.daysLeft+' 天':'—')}</b></div></div><div class="v55-reco-line">${donorTxt}${extra?' · '+extra:''}</div><div class="v55-actions"><button class="v55-btn neutral" data-open="${esc(x.code)}">查看库存</button>${btn}</div></div>`;
+  return `<div class="v55-pcard" data-open="${esc(x.code)}"><div class="v55-pcard-row"><span class="v55-badge ${gc}">${bl}</span><div class="v55-pcard-name">${esc(x.name)}</div>${trend}${btn}</div><div class="v55-pcard-meta"><span>日均 <b>${x.daily}</b></span><span>建议补 <b>${x.suggest}</b></span>${sellTxt}${donorTxt}<span>近30天售 ${x.sold14}</span></div></div>`;
 }
 function renderHome(){
  const a=scoped(),g=healthGroups(a);
@@ -2635,6 +2647,8 @@ function storeResultEmptyHTML(view){
  return `<div class="v104-store-empty"><b>没有找到匹配的本店商品</b><span>请核对型号、版本、内存、颜色或商品编码。搜索规则与“查库存”页面一致，但结果只显示李家村本店库存。</span></div>`;
 }
 function bindStoreResultCards(){
+ page.querySelectorAll('#v54Page [data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openSku(b.dataset.open)});
+ page.querySelectorAll('#v54Page [data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addBest(b.dataset.add)});
  page.querySelectorAll('#v104StoreGrid [data-store-code]').forEach(b=>b.onclick=()=>openSku(b.dataset.storeCode));
  page.querySelectorAll('#v104StoreGrid [data-store-version]').forEach(b=>b.onclick=()=>{
    const inp=document.getElementById('v56StoreQ'),tags=b.dataset.storeVersion||'';
