@@ -166,6 +166,12 @@ def build_brief(recs, end, sys_info):
     units = sum(float(r.get("qty") or 0) for r in day_rows)
     revenue = sum(float(r.get("money") or 0) for r in day_rows)
     returns = sum(1 for r in day_rows if r.get("neg") == "退货")
+
+    def _cat(sku):
+        return (sys_info.get(sku) or {}).get("cat") or ""
+
+    phones = sum(float(r.get("qty") or 0) for r in day_rows
+                 if _cat((r.get("sku") or "").strip()) == "手机")
     by_sku = {}
     for r in day_rows:
         sku = (r.get("sku") or "").strip()
@@ -183,7 +189,8 @@ def build_brief(recs, end, sys_info):
     trend_pct = int(round((last7 - prev7) / prev7 * 100)) if prev7 > 0 else (100 if last7 > 0 else 0)
     return {
         "day": day, "label": end.strftime("%m-%d"),
-        "units": int(round(units)), "revenue": int(round(revenue)), "returns": returns,
+        "units": int(round(units)), "phones": int(round(phones)),
+        "other": int(round(units - phones)), "revenue": int(round(revenue)), "returns": returns,
         "top": top, "last7": int(round(last7)), "prev7": int(round(prev7)),
         "trendPct": trend_pct,
     }
