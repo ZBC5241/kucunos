@@ -2424,7 +2424,7 @@ const TRANSFER_STORES=new Set([...STORES,
  '电信省广场店','电信电子城店','电信土门店','电信凤城四路店','电信高陵马家湾店']);
 const CORE=new Set(['手机','平板电脑','穿戴','电脑','音频','智慧屏']);
 const page=document.getElementById('v54Page'),query=document.getElementById('queryPage'),sheet=document.getElementById('v54Sheet'),sheetBody=document.getElementById('v54SheetBody');
-let tab='query',scope='core',restockFilter='need',restockQ='',supplyMode='pool',storeScope='all',storeSort='desc',storeStatus='all',storeCat='all',storeQ='';
+let tab='query',scope='core',restockFilter='need',restockQ='',supplyMode='pool',storeScope='all',storeSort='risk',storeStatus='all',storeCat='all',storeQ='';
 let cart={};try{cart=JSON.parse(localStorage.getItem('ljc-transfer-v55')||'{}')}catch(e){cart={}}
 let taskState={};try{taskState=JSON.parse(localStorage.getItem('ljc-task-v55')||'{}')}catch(e){taskState={}}
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
