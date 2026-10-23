@@ -160,7 +160,7 @@ def load_sales():
 
 
 def build_brief(recs, end, sys_info):
-    """昨日战报：最新营业日净销量/实收/退货/Top3 + 近7天vs前7天趋势。"""
+    """昨日战报：最新营业日净销量/实收/退货/Top3 + 近30天vs前30天趋势。"""
     day = end.isoformat()
     day_rows = [r for r in recs if (r.get("d") or "") == day]
     units = sum(float(r.get("qty") or 0) for r in day_rows)
@@ -175,11 +175,11 @@ def build_brief(recs, end, sys_info):
     top = sorted(by_sku.items(), key=lambda x: -x[1])[:3]
     top = [{"name": (sys_info.get(s) or {}).get("name") or s, "qty": int(round(q))}
            for s, q in top if q > 0]
-    w7 = [r for r in recs if (end - datetime.timedelta(days=6)).isoformat() <= (r.get("d") or "") <= day]
-    w7p = [r for r in recs
-           if (end - datetime.timedelta(days=13)).isoformat() <= (r.get("d") or "") <= (end - datetime.timedelta(days=7)).isoformat()]
-    last7 = sum(float(r.get("qty") or 0) for r in w7)
-    prev7 = sum(float(r.get("qty") or 0) for r in w7p)
+    w30 = [r for r in recs if (end - datetime.timedelta(days=29)).isoformat() <= (r.get("d") or "") <= day]
+    w30p = [r for r in recs
+            if (end - datetime.timedelta(days=59)).isoformat() <= (r.get("d") or "") <= (end - datetime.timedelta(days=30)).isoformat()]
+    last7 = sum(float(r.get("qty") or 0) for r in w30)
+    prev7 = sum(float(r.get("qty") or 0) for r in w30p)
     trend_pct = int(round((last7 - prev7) / prev7 * 100)) if prev7 > 0 else (100 if last7 > 0 else 0)
     return {
         "day": day, "label": end.strftime("%m-%d"),
@@ -331,7 +331,7 @@ def main():
                   % (stats["windowStart"], stats["windowEnd"], stats["salesSku"],
                      stats["matched"], stats["gapSku"], stats["noStockSku"], len(items)))
             if brief:
-                print("[brief] %s 售%d台 实收%d元 退货%d单 | 近7天%d vs 前7天%d (%+d%%)"
+                print("[brief] %s 售%d台 实收%d元 退货%d单 | 近30天%d vs 前30天%d (%+d%%)"
                       % (brief["day"], brief["units"], brief["revenue"], brief["returns"],
                          brief["last7"], brief["prev7"], brief["trendPct"]))
             for it in items:
