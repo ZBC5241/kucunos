@@ -7,7 +7,7 @@ build_restock.py —— 生成「今日该备的货」清单并注入 index.html
   窗口      = 销售数据实际最新日期往前 WINDOW_DAYS(14) 天（不用今天，数据可能滞后一天）
   日均销量  = 窗口内该 SKU 净销量合计 / 14（退货行数量为负，天然冲减）
   本店可售  = index.html 内嵌库存中 wh=李家村 且非演示机行的可用量 a 合计（无行则 0）
-  建议补    = ceil(日均 × LEAD_DAYS(7) − 本店可售)，下限 0
+  建议补    = ceil(日均 × LEAD_DAYS(30) − 本店可售)，下限 0
   断货损失  = 日均 × 该 SKU 窗口内实收均价（仅正向行），即每天约少卖多少钱
   趋势      = 窗口内近 7 天净销量 vs 前 7 天 → up/down/flat + 涨跌幅
   货源      = 30 个可调拨库区（17店+华为系大库4+电信9）中该 SKU 库存最深的非本店库区
@@ -39,7 +39,7 @@ SALES_CACHE = os.path.join(HERE, "data", "sales-cache.json")
 HOME = "华为李家村万达授权体验店"
 
 WINDOW_DAYS = 14
-LEAD_DAYS = 7
+LEAD_DAYS = 30
 TOP_N = 30                          # 注入全量，首页显 8 条，备货 tab 可显全部
 NOSTOCK_MIN_SOLD = 3                # 断货类入榜的最低 14 天销量（滤串货噪音）
 NOSTOCK_EXCLUDE_CATS = {"增值服务", "演示机"}  # 服务/演示机不进货，不进断货类
