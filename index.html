@@ -1793,7 +1793,7 @@ html.ljc-authenticated #queryPage .qv62-card:after{background:linear-gradient(11
 
 <style id="evo-dark-kucun">
 :root{--evo-tr:.45s cubic-bezier(.22,1,.36,1)}
-.theme-toggle-k{position:fixed;top:calc(10px + var(--lg-safe,0px));right:10px;z-index:9998;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(38,39,48,.86);color:#cfd3ea;cursor:pointer;display:grid;place-items:center;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s,background-color var(--evo-tr),border-color var(--evo-tr),color var(--evo-tr)}
+.theme-toggle-k{position:fixed;top:calc(10px + var(--lg-safe,0px));right:78px;z-index:9999;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(38,39,48,.86);color:#cfd3ea;cursor:pointer;display:grid;place-items:center;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s,background-color var(--evo-tr),border-color var(--evo-tr),color var(--evo-tr)}
 .theme-toggle-k:active{transform:scale(.9)}
 .theme-toggle-k svg{width:19px;height:19px}
 .theme-toggle-k .ic-moon{display:none}
@@ -3048,7 +3048,7 @@ if(readSession())openWorkbench();else showLogin();
     b.innerHTML='<svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>'
       +'<svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8z"/></svg>';
     b.addEventListener('click',function(){ var now=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(now); try{ localStorage.setItem(KEY,now); }catch(e){} });
-    (document.querySelector('.v55-top')||document.body).appendChild(b);
+    document.body.appendChild(b);
   }
   var tries=0;(function poll(){buildBtn(); if(++tries<50) setTimeout(poll,600);})();
   root.classList.add('evo-ready');
