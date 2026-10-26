@@ -1710,6 +1710,35 @@ body.lg-lite #queryPage .qv7c-panel, body.lg-lite #queryPage .search-box, body.l
 }
 </style>
 
+
+
+<style id="flat-clean-override">
+/* 膜套包式彻底干净：斩光层+毛玻璃，实白卡+中性灰阴影 */
+:root{
+  --lg-canvas:#F6F7F9!important;--lg-solid:#fff!important;--lg-soft:#fff!important;
+  --lg-edge:rgba(0,0,0,.06)!important;--lg-line:rgba(0,0,0,.07)!important;
+  --lg-glass:#fff!important;--lg-card:#fff!important;
+  --lg-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.05)!important;
+  --lg-card-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.05)!important;
+  --v55-bg:#F6F7F9!important;--v55-card:#fff!important;
+}
+html{background:#F6F7F9!important}
+body,body.v55-mode{background:#F6F7F9!important}
+body::before,body::after{display:none!important}
+*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.lg-orb,.lg-ambient{display:none!important}
+.qv64-panel::before,.qv65-panel::after{display:none!important}
+.v111-login{background:#F6F7F9!important}
+.v55-top,#v54Nav,.qv58-head,.qv62-head,.qv63-header,.qv64-header,.qv65-header,.qv7c-header,
+.v111-login-card,.v111-logout,.search-box,.v55-pill,.v55-iconbtn,.qv7c-panel,.v55-section,.v55-task,
+.v56-store-overview,.qv62-card,.qv58-summary,.qv62-placeholder,.qv58-empty,.qv58-limit-note{
+  background:#fff!important;background-image:none!important;
+  border:1px solid rgba(0,0,0,.06)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.05)!important;
+}
+.v55-pill.on,.tab.on{background:#efeafc!important;border-color:rgba(104,90,217,.25)!important}
+</style>
+
 </head>
 <body>
 <section class="v111-login" id="v111Login" aria-label="登录">
