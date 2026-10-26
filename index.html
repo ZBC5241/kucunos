@@ -2935,7 +2935,25 @@ if(readSession())openWorkbench();else showLogin();
 .qv62-price .orig.cut-orig{text-decoration:line-through}
 .qv62-price .cut{color:#e53935;font-size:12px}
 .qv62-price .final{color:#e53935;font-weight:700;font-size:15px;line-height:1.15}
-.qv62-price .np{color:#bdbdbd;font-size:11px}</style>
+.qv62-price .np{color:#bdbdbd;font-size:11px}
+/* ===== kucunos-dark-align-v2（2026-10-26）：暗色对齐家族深色（深底#0D0F14+亮字+提亮紫）===== */
+@media(prefers-color-scheme:dark){
+  :root{
+    --lg-canvas:#0D0F14;
+    --lg-ink:#E9EBF2;--lg-sub:#A9B1C2;--lg-muted:#7A8296;
+    --lg-accent:#A78BFA;--lg-green:#4ADE80;--lg-red:#F87171;--lg-amber:#FBBF24;
+    --lg-solid:rgba(24,27,34,.94);--lg-soft:rgba(38,41,52,.72);
+    --lg-edge:rgba(255,255,255,.12);--lg-line:rgba(255,255,255,.08);
+    --lg-glass:linear-gradient(145deg,rgba(34,37,47,.78),rgba(20,22,29,.86));
+    --lg-card:linear-gradient(145deg,#161922,#11131A);
+    --lg-shadow:0 14px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+    --lg-card-shadow:0 10px 28px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);
+    --ios27-bg:#0D0F14;--ios27-glass:rgba(30,33,42,.72);--ios27-content:rgba(24,27,34,.86);
+  }
+  html{background:#0D0F14}
+  body,body.v55-mode{background:radial-gradient(ellipse at 18% 8%,rgba(122,110,220,.10),transparent 40%),radial-gradient(ellipse at 96% 68%,rgba(41,116,139,.06),transparent 43%),#0D0F14!important}
+}
+</style>
 <script src="promoData.js"></script>
 <script>(function(){
   if(!window.PRICE_DATA){console.warn('promoData.js 未加载');return;}
