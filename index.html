@@ -2923,7 +2923,8 @@ if(readSession())openWorkbench();else showLogin();
     var act=promos.filter(function(x){return x.valid;});
     var cut=0;act.forEach(function(x){if(x.cut>cut)cut=x.cut;});
     if(cut>0){
-      return '<span class="orig cut-orig">原价 '+retail+'</span><span class="cut">直降'+cut+'</span><span class="final">到手 '+(retail-cut)+'</span>';
+      /* 18号 2026-11-14: 价格保留小数后规避 JS 浮点长串(19.9-5=14.899999999999999) */
+      return '<span class="orig cut-orig">原价 '+retail+'</span><span class="cut">直降'+cut+'</span><span class="final">到手 '+(Math.round((retail-cut)*100)/100)+'</span>';
     }
     return '<span class="orig">原价 '+retail+'</span>';
   }
