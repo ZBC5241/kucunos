@@ -42,6 +42,19 @@ def cv(c, ss):
 def main():
     files = sorted(glob.glob(os.path.join(DOWNLOADS, "现存量_*.xlsx")),
                    key=os.path.getmtime, reverse=True)
+    # 18号 2026-11-14 数据真实性红线：自动链路会传入本轮开始时刻，
+    # 只认本轮刚从用友导出的 xlsx。旧逻辑「取 mtime 最新的一份」在本轮下载失败时
+    # 会静默拿几天前的旧导出，再被下游当成"刚更新"的数据推上线 = 以旧充新。
+    # 手动单独运行本脚本（不传环境变量）保持原行为。
+    start = os.environ.get("LJC_PULL_START")
+    if start:
+        try:
+            files = [p for p in files if os.path.getmtime(p) >= float(start) - 2]
+        except ValueError:
+            pass
+        if not files:
+            log("[ALERT] 本轮没有新导出的现存量 xlsx，拒绝拿旧文件顶替（数据真实性红线），本次更新中止")
+            sys.exit(1)
     if not files:
         log("!! 没找到 ~/Downloads/现存量_*.xlsx，本次更新中止")
         sys.exit(1)

@@ -12,6 +12,9 @@ CLAW=/Users/mac/WorkBuddy/Claw
 PY=/Users/mac/.workbuddy/binaries/python/envs/default/bin/python3
 DL=~/Downloads
 TODAY=$(date +%Y%m%d)
+# 18号 2026-11-14 数据真实性红线：本轮开始时刻，conv_xlsx.py 只认这个时刻之后
+# 新导出的 xlsx，绝不允许拿 Downloads 里的历史旧导出顶替本轮拉取。
+export LJC_PULL_START=$(date +%s)
 
 cd "$KUCUNOS" || exit 1
 
@@ -95,9 +98,14 @@ pull_csv() {
   # 导致 build_v11_inv.py 把日志文本当路径 → FileNotFoundError。
   # 真正的 csv 路径由下方 conv_xlsx.py 兜底输出（仅单行路径走 stdout）。
   "$PY" "$CLAW/stock_pull.py" "$KUCUNOS" >&2 || return 1
-  local LATEST=$(ls -t "$DL"/*.xlsx 2>/dev/null | grep -v "现存量_${TODAY}_默认方案.xlsx" | head -1)
-  [ -z "$LATEST" ] && return 1
-  cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
+  # 🔴 2026-11-14 数据真实性红线：只认本轮刚下载的文件。
+  # 旧写法 ls -t ~/Downloads/*.xlsx | head -1 会抓到几天前的旧导出，cp 成"今天"的
+  # 文件名后骗过新鲜度闸门，页面显示旧库存却标成刚更新（以旧充新），已禁止。
+  local LATEST=$("$PY" -c 'import os,sys,glob; dl,s=sys.argv[1],float(sys.argv[2]); c=[p for p in glob.glob(os.path.join(dl,"*.xlsx")) if os.path.getmtime(p)>=s-2 and not os.path.basename(p).startswith("~$")]; print(max(c,key=os.path.getmtime) if c else "")' "$DL" "$LJC_PULL_START")
+  [ -z "$LATEST" ] && { echo "!! 本轮没有新导出的 xlsx，拒绝拿历史旧文件顶替（数据红线），本档更新中止" >&2; return 1; }
+  if [ "$LATEST" != "$DL/现存量_${TODAY}_默认方案.xlsx" ]; then
+    cp "$LATEST" "$DL/现存量_${TODAY}_默认方案.xlsx"
+  fi
   csv=$("$PY" "$KUCUNOS/conv_xlsx.py") || return 1
   printf '%s' "$csv"; return 0
 }
@@ -124,8 +132,8 @@ echo "=== [2/4] 注入 V11.4 底表（含新鲜度闸门）==="
 # build_v11_inv.py 内部：数据无变化 -> 不写 index.html（git diff 为空 -> 跳过）
 #                    数据有变化 -> 写 index.html（git diff 非空 -> 提交）
 
-echo "=== [2.5/4] 拉销售数据（缓存4h，失败用旧缓存不阻塞）==="
-"$PY" "$KUCUNOS/pull_sales.py" || echo "⚠️ 销售数据拉取失败，使用旧缓存（备货清单数据可能过期）"
+echo "=== [2.5/4] 拉销售数据（历史区间型，按设计 ≤4h 重拉一次；缓存必须带真实采集时刻）==="
+"$PY" "$KUCUNOS/pull_sales.py" || echo "⚠️ [ALERT] 本轮销量未拉到最新，沿用带采集时刻的旧缓存；页面显示该时刻，超 7 天注入空清单并提示，绝不冒充最新"
 
 echo "=== [2.6/4] 生成「今日该备的货」清单并注入 ==="
 "$PY" "$KUCUNOS/build_restock.py" || echo "⚠️ 备货清单生成失败（不影响库存数据本身，下档自动重试）"
