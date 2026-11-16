@@ -993,6 +993,12 @@ body,body.v55-mode{background:var(--v55-bg)!important}
 </style>
 <style id="v105-search-consistency-style">
 .v104-store-search-section{margin:6px 0 9px!important;padding:0!important}.v104-store-search-section .v55-search{margin:0!important}.v104-store-search-note{padding:5px 2px 0!important;font-size:9.8px!important}.v105-query-store-context{display:flex;align-items:center;gap:7px;margin:0 0 8px;padding:8px 10px;border:1px solid #e3def7;background:#f8f6ff;border-radius:12px;font-size:10px;color:#858aa0}.v105-query-store-context b{color:var(--theme-accent,#6657d9);font-size:11px}.v105-query-store-context em{font-style:normal;margin-left:auto;color:#9b9fb0}.v105-zero-badge{background:#fff0f1;color:#d74750;border-radius:999px;padding:2px 6px;font-size:9px;font-weight:850}.v105-store-zero{border-color:#eee5e7}.v105-store-zero .qv62-qty b{color:#d74750}.v105-restock-result-sub{padding:0 2px 8px}.v105-restock-empty{margin-top:8px}.v105-restock-ambiguous{background:#fff;border:1px solid #e3def7;border-radius:14px;padding:12px;margin-top:8px}.v105-restock-ambiguous b{font-size:12px}.v105-restock-ambiguous p{font-size:10px;color:#8a91a5;line-height:1.55;margin:6px 0 9px}.v105-restock-choices{display:flex;gap:6px;flex-wrap:wrap}
+/* 18号 2026-11-16 修复：本店搜索时，把探索态的概览/断货/品类/排序/筛选收起，让结果紧贴搜索框，避免"搜了看不到内容"。由 updateStoreSearchView 切换 .v104-searching 类，不重绘整页、保住输入法焦点。 */
+html #v54Page.v104-searching [data-v104-block="overview"],
+html #v54Page.v104-searching [data-v104-block="sellout"],
+html #v54Page.v104-searching [data-v104-block="cats"],
+html #v54Page.v104-searching [data-v104-block="sort"]{display:none!important}
+html #v54Page.v104-searching .v104-store-search-section{margin-bottom:4px!important}
 </style>
 
 <style id="v106-identity-visibility">
@@ -2731,6 +2737,7 @@ function updateStoreSearchView(){
  const view=buildStoreFilteredView(),grid=document.getElementById('v104StoreGrid'),sub=document.getElementById('v104StoreResultSub'),title=document.getElementById('v104StoreResultTitle');
  if(!grid)return;
  const q=!!view.q;
+ page.classList.toggle('v104-searching',q);
  if(title)title.textContent=q?'本店搜索结果':(storeStatus==='all'?(storeSort==='risk'?'异常商品优先':'本店商品数量排行'):slabel(storeStatus)+'商品');
  if(sub){
    const ignored=view.resolved&&view.resolved.ignoredOtherStore,alias=view.resolved&&view.resolved.storeIntent?view.resolved.storeIntent.alias:'';
@@ -2748,15 +2755,16 @@ function renderStore(){
  [...cats.entries()].sort((a,b)=>b[1].qty-a[1].qty||b[1].sku-a[1].sku).forEach(([cat,v])=>catButtons.push(`<button class="v56-cat ${storeCat===cat?'on':''}" data-cat="${esc(cat)}"><b>${esc(cat)}</b><span>${v.sku} SKU · ${v.qty} 件</span></button>`));
  const view=buildStoreFilteredView();
  const rpS=(typeof restockPlanData!=='undefined'&&restockPlanData&&Array.isArray(restockPlanData.items))?restockPlanData.items.filter(x=>x.noStock):[];
- const selloutSec=(!view.q&&storeStatus==='all'&&storeCat==='all'&&rpS.length)?`<section class="v55-section"><div class="v55-sec-head"><div><div class="v55-sec-title">无货但在卖 · 真断货</div><div class="v55-sec-sub">本店没现货、但近14天有真实销量的款 · 最该马上解决</div></div></div>${rpS.slice(0,4).map(restockPlanCard).join('')}</section>`:'';
+ const selloutSec=(!view.q&&storeStatus==='all'&&storeCat==='all'&&rpS.length)?`<section class="v55-section" data-v104-block="sellout"><div class="v55-sec-head"><div><div class="v55-sec-title">无货但在卖 · 真断货</div><div class="v55-sec-sub">本店没现货、但近14天有真实销量的款 · 最该马上解决</div></div></div>${rpS.slice(0,4).map(restockPlanCard).join('')}</section>`:'';
  page.innerHTML=top('本店库存','李家村当前可用库存 · 搜索只按本店库存口径展示',`<button class="v55-pill" id="v56StoreScope">${storeScope==='core'?'核心终端':'全部商品'} · 切换</button>`)+
- `<section class="v56-store-overview"><div class="label">${storeScope==='core'?'核心终端':'全部商品'} · 当前范围</div><div class="v56-store-total"><b>${total}<small>件库存</small></b><div class="hint">不是“建议数量”<br>这里看的是李家村当前可用库存</div></div><div class="v56-store-stats"><div class="v56-store-stat"><b>${inStock.length}</b><span>有库存 SKU</span></div><div class="v56-store-stat"><b>${zero.length}</b><span>零库存 SKU</span></div><div class="v56-store-stat"><b>${ownMedian}</b><span>在库中位数</span></div></div></section>`+
+ `<section class="v56-store-overview" data-v104-block="overview"><div class="label">${storeScope==='core'?'核心终端':'全部商品'} · 当前范围</div><div class="v56-store-total"><b>${total}<small>件库存</small></b><div class="hint">不是“建议数量”<br>这里看的是李家村当前可用库存</div></div><div class="v56-store-stats"><div class="v56-store-stat"><b>${inStock.length}</b><span>有库存 SKU</span></div><div class="v56-store-stat"><b>${zero.length}</b><span>零库存 SKU</span></div><div class="v56-store-stat"><b>${ownMedian}</b><span>在库中位数</span></div></div></section>`+
  `<div class="v104-store-search-section"><div class="v55-search"><input id="v56StoreQ" value="${esc(storeQ)}" autocomplete="off" enterkeyhint="search" placeholder="搜本店商品 / 型号 / 内存 / 颜色 / 商品编码"></div><div class="v104-store-search-note">与“查库存”同一套搜索算法 · 只显示李家村本店库存</div></div>`+
  selloutSec+
- `<section class="v55-section"><div class="v55-sec-head"><div><div class="v55-sec-title">品类库存结构</div><div class="v55-sec-sub">点品类即可只看该类商品；数量是本店现存量合计</div></div></div><div class="v56-catbar">${catButtons.join('')}</div></section>`+
- `<div class="v56-sort"><button class="${storeSort==='risk'?'on':''}" data-sort="risk">异常优先</button><button class="${storeSort==='desc'?'on':''}" data-sort="desc">库存多 → 少</button><button class="${storeSort==='asc'?'on':''}" data-sort="asc">库存少 → 多</button></div>`+
- `<div class="v55-filterbar">${[['all','全部'],['out','无货'],['low','低水位'],['healthy','健康'],['high','偏高']].map(([k,l])=>`<button class="v55-chip ${storeStatus===k?'on':''}" data-store-status="${k}">${l} · ${k==='all'?base.length:base.filter(x=>x.status===k).length}</button>`).join('')}</div>`+
+ `<section class="v55-section" data-v104-block="cats"><div class="v55-sec-head"><div><div class="v55-sec-title">品类库存结构</div><div class="v55-sec-sub">点品类即可只看该类商品；数量是本店现存量合计</div></div></div><div class="v56-catbar">${catButtons.join('')}</div></section>`+
+ `<div class="v56-sort" data-v104-block="sort"><button class="${storeSort==='risk'?'on':''}" data-sort="risk">异常优先</button><button class="${storeSort==='desc'?'on':''}" data-sort="desc">库存多 → 少</button><button class="${storeSort==='asc'?'on':''}" data-sort="asc">库存少 → 多</button></div>`+
+ `<div class="v55-filterbar" data-v104-block="filter">${[['all','全部'],['out','无货'],['low','低水位'],['healthy','健康'],['high','偏高']].map(([k,l])=>`<button class="v55-chip ${storeStatus===k?'on':''}" data-store-status="${k}">${l} · ${k==='all'?base.length:base.filter(x=>x.status===k).length}</button>`).join('')}</div>`+
  `<section class="v55-section"><div class="v55-sec-head"><div><div class="v55-sec-title" id="v104StoreResultTitle">${view.q?'本店搜索结果':(storeStatus==='all'?(storeSort==='risk'?'异常商品优先':'本店商品数量排行'):slabel(storeStatus)+'商品')}</div><div class="v55-sec-sub" id="v104StoreResultSub">${view.q?`${view.arr.length} 款匹配 SKU · 本店可售合计 ${view.filteredQty} 件 · 0 库存也会明确显示`:`${view.arr.length} 款 · 当前筛选合计 ${view.filteredQty} 件 · 点商品可看库存分布`}</div></div></div><div class="v91-store-grid" id="v104StoreGrid">${view.arr.length?view.arr.map((x,i)=>view.q?storeSearchCard(x,i):storeStockCard(x,i)).join(''):storeResultEmptyHTML(view)}</div><div class="v56-store-note">说明：搜索结果只展示李家村本店可售库存；不搜索时的排行仍按李家村可用库存展示。水位状态沿用17店分布参考模型，因此“库存数量多”与“水位偏高”不是同一个概念。</div></section>`;
+ page.classList.toggle('v104-searching',!!view.q);
  bindTop();
  const ssc=document.getElementById('v56StoreScope');if(ssc)ssc.onclick=()=>{storeScope=storeScope==='core'?'all':'core';storeCat='all';renderStore()};
  page.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{storeCat=b.dataset.cat;renderStore()});
