@@ -1742,6 +1742,13 @@ body::before,body::after{display:none!important}
   border:1px solid rgba(0,0,0,.06)!important;
   box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.05)!important;
 }
+/* 18号 2026-11-16 UI修复：上面的全局规则误把商品名容器 .qv62-head 套成白底+边框+阴影，
+   导致搜索结果商品名外面出现一个突兀的白框（晨哥截图反馈）。这里只还原 #queryPage 内的
+   .qv62-head 为透明无框，与库存查询(kucun)一致。用 html 前缀提高特异性压过上面的全局规则。 */
+html #queryPage .qv62-head{
+  background:transparent!important;background-image:none!important;
+  border:0!important;box-shadow:none!important;padding:0 0 4px!important;
+}
 .v55-pill.on,.tab.on{background:#efeafc!important;border-color:rgba(104,90,217,.25)!important}
 </style>
 
